@@ -9,6 +9,12 @@ use syn::{
 };
 use colored::*;
 use quote::ToTokens;
+use log::{
+    info,
+    error,
+    warn
+};
+
 use crate::{
     extraction::extract_method,
     extraction::ExtractionInput,
@@ -40,6 +46,8 @@ fn parse_and_compare_ast(output_file_path: &str, expected_file_path: &str) -> Re
 pub fn test() {
     // Measure total time at the start
     let overall_start_time: Instant = Instant::now();
+
+    info!("Starting tests...");
 
     // Initialize counters and time trackers
     let mut total_tests: i32 = 0;
@@ -128,6 +136,8 @@ pub fn test() {
         }
 
         println!("Test {} | {} | {}: {} in {}", index + 1, extraction_status, comparison_status, test_name, test_elapsed_time_str);
+        info!("Test {} | {} | {}: {} in {}", index + 1, extraction_status, comparison_status, test_name, test_elapsed_time_str);
+
     }
 
     // Total elapsed time
@@ -161,6 +171,15 @@ pub fn test() {
     println!("Total time: {}", total_elapsed_time_str);
     println!("Average time per test: {}", average_time_str);
 
+    // Log overall statistics
+    info!("------------------------------------------------------------------");
+    info!("Total tests run: {}", total_tests);
+    info!("Tests passed stage 1: {}", passed_stage_1);
+    info!("Tests passed: {}", passed_tests);
+    info!("Tests failed: {}", failed_tests);
+    info!("Total time: {}", total_elapsed_time_str);
+    info!("Average time per test: {}", average_time_str);
+
     if let Some(min_time) = min_test_time {
         let min_time_secs: f64 = min_time.as_secs_f64();
         let min_time_str: String = if min_time_secs < 1.0 {
@@ -169,6 +188,7 @@ pub fn test() {
             format!("{:.2}s", min_time_secs)
         };
         println!("Shortest test time: {}", min_time_str);
+        info!("Shortest test time: {}", min_time_str);
     }
 
     if let Some(max_time) = max_test_time {
@@ -179,6 +199,7 @@ pub fn test() {
             format!("{:.2}s", max_time_secs)
         };
         println!("Longest test time: {}", max_time_str);
+        info!("Longest test time: {}", max_time_str);
     }
 }
 

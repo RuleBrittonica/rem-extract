@@ -19,4 +19,4 @@ Cargo.lock
 
 # Ignore the contents of the output directory (where the test results are
 # stored)
-output/
+output/*
