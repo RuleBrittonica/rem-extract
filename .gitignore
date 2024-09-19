@@ -17,5 +17,6 @@ Cargo.lock
 
 /target
 
-rust_impl.rs
-rust_tests.rs
+# Ignore the contents of the output directory (where the test results are
+# stored)
+output/

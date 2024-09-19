@@ -19,6 +19,7 @@ use args::{
 };
 
 mod test;
+mod test_details;
 use test::test;
 
 mod error;
