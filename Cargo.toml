@@ -1,0 +1,22 @@
+[package]
+name = "rem-extract"
+version = "0.1.0"
+edition = "2021"
+authors = ["Matthew Britton <matt.britton@anu.edu.au>"]
+licence = "MIT"
+description = "Providing extract method capability for the REM toolchain"
+repository = "https://github.com/RuleBrittonica/rem-extract"
+readme = "README.md"
+
+[dependencies]
+log = "0.4.22"
+flexi_logger = "0.29.0"
+clap = { version = "4.5.16", features = ["derive"] }
+colored = "2.1.0"
+
+[build-dependencies]
+
+[dev-dependencies]
+
+[features]
+default = []
