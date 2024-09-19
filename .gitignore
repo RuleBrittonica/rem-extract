@@ -18,3 +18,4 @@ Cargo.lock
 /target
 
 rust_impl.rs
+rust_tests.rs

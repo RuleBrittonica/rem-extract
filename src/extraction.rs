@@ -2,8 +2,12 @@ use quote::{
     format_ident,
     quote
 };
-use rem_utils;
-use std::fs;
+use rem_utils::fmt_file;
+use std::{
+    fs,
+    io,
+    io::ErrorKind,
+};
 use syn::{
     parse_file,
     Item,
@@ -21,9 +25,47 @@ pub struct ExtractionInput {
     pub new_fn_name: String,
 }
 
+// Check if the file exists and is readable
+fn check_file_exists(file_path: &str) -> Result<(), ExtractionError> {
+    if fs::metadata(file_path).is_err() {
+        return Err(ExtractionError::Io(io::Error::new(
+            ErrorKind::NotFound,
+            format!("File not found: {}", file_path),
+        )));
+    }
+    Ok(())
+}
+
+fn check_line_numbers(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    if input.start_line >= input.end_line {
+        return Err(ExtractionError::InvalidLineRange);
+    }
+
+    if input.start_line < 0 {
+        return Err(ExtractionError::InvalidLineRange);
+    }
+
+    let source_code: String = fs::read_to_string(&input.file_path)?;
+    let num_lines = source_code.lines().count();
+    if input.end_line >= num_lines {
+        return Err(ExtractionError::InvalidLineRange);
+    }
+
+    Ok(())
+}
+
+fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    // Execute each input validation step one by one
+    check_file_exists(&input.file_path)?;
+    check_line_numbers(input)?;
+
+    Ok(())
+}
 pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
+    verify_input(&input)?;
+
     // Read the file and parse it into an AST
-    let source_code = fs::read_to_string(&input.file_path)?;
+    let source_code: String = fs::read_to_string(&input.file_path)?;
     let parsed_file = parse_file(&source_code)?;
 
     // Extract the statements in the specified line range
@@ -53,7 +95,7 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     };
 
     // Replace the original lines with a call to the new function
-    let modified_code = source_code
+    let modified_code: String = source_code
         .lines()
         .enumerate()
         .map(|(i, line)| {
@@ -69,13 +111,13 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
         .join("\n");
 
     // Add the new function at the end of the file
-    let output_code = format!("{}\n\n{}", modified_code, new_function);
+    let output_code: String = format!("{}\n\n{}", modified_code, new_function);
 
-    // Write the modified code to the original file
-    fs::write(&input.file_path, &output_code)?;
+    // Write the modified code to the output path
+    fs::write(&input.output_file_path, &output_code)?;
 
     // Call rustfmt on the modified file
-    let format_output = rem_utils::fmt_file(&input.file_path, &vec![]).output();
+    let format_output = fmt_file(&input.output_file_path, &vec![]).output();
     if format_output.is_err() {
         return Err(ExtractionError::FormatError);
     }
