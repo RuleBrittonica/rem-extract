@@ -1,7 +1,6 @@
 use crate::{
     packet_line::{
-        DELIMITER_LINE, ERR_PREFIX, FLUSH_LINE, MAX_DATA_LEN, MAX_LINE_LEN, RESPONSE_END_LINE,
-        U16_HEX_BYTES,
+        DELIMITER_LINE, ERR_PREFIX, FLUSH_LINE, MAX_DATA_LEN, MAX_LINE_LEN, RESPONSE_END_LINE, U16_HEX_BYTES,
     },
     PacketLine,
 };
@@ -48,7 +47,7 @@ pub fn streaming(data: &[u8]) -> Result<Stream, Error> {
         });
     }
     let hex_bytes = &data[..U16_HEX_BYTES];
-    // Refactoring Start = Line 51
+    // Start Refactoring - Line 51
     for (line_bytes, line_type) in &[
         (FLUSH_LINE, PacketLine::Flush),
         (DELIMITER_LINE, PacketLine::Delimiter),
@@ -72,7 +71,7 @@ pub fn streaming(data: &[u8]) -> Result<Stream, Error> {
     if wanted_bytes == 4 {
         return Err(Error::DataIsEmpty);
     }
-    // Refactoring End = Line 73
+    // End refactoring - Line 73
     if wanted_bytes > MAX_LINE_LEN {
         return Err(Error::DataLengthLimitExceeded(wanted_bytes));
     }
