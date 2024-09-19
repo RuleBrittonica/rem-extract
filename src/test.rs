@@ -9,11 +9,8 @@ use syn::{
 };
 use colored::*;
 use quote::ToTokens;
-use log::{
-    info,
-    error,
-    warn
-};
+use log::info;
+use regex::Regex;
 
 use crate::{
     extraction::extract_method,
@@ -28,6 +25,12 @@ pub struct TestFile<'a> {
 }
 
 use crate::test_details::TEST_FILES; // Import the test file details from test_details.rs
+
+// Helper function to strip ANSI escape codes
+fn strip_ansi_codes(s: &str) -> String {
+    let ansi_regex = Regex::new(r"\x1b\[([0-9]{1,2}(;[0-9]{0,2})*)m").unwrap();
+    ansi_regex.replace_all(s, "").to_string()
+}
 
 fn parse_and_compare_ast(output_file_path: &str, expected_file_path: &str) -> Result<bool, ExtractionError> {
     let output_content: String = fs::read_to_string(output_file_path)?;
@@ -136,7 +139,11 @@ pub fn test() {
         }
 
         println!("Test {} | {} | {}: {} in {}", index + 1, extraction_status, comparison_status, test_name, test_elapsed_time_str);
-        info!("Test {} | {} | {}: {} in {}", index + 1, extraction_status, comparison_status, test_name, test_elapsed_time_str);
+        // Strip ANSI color codes before logging
+        let clean_extraction_status = strip_ansi_codes(&extraction_status);
+        let clean_comparison_status = strip_ansi_codes(&comparison_status);
+
+        info!("Test {} | {} | {}: {} in {}", index + 1, clean_extraction_status, clean_comparison_status, test_name, test_elapsed_time_str);
 
     }
 
