@@ -1,51 +1,44 @@
-use clap::{
-    Parser,
-    Subcommand,
-    ArgAction,
-};
+use clap::{ArgAction, Parser, Subcommand};
 
 use std::path::PathBuf;
 
-use crate::messages::{
-    version::VERSION,
-    about::ABOUT,
-    author::AUTHOR,
-};
+use crate::messages::{about::ABOUT, author::AUTHOR, version::VERSION};
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[command(
     version = VERSION,
     about = ABOUT,
     author = AUTHOR,
 )]
-
-pub struct Args {
+pub struct EXTRACTArgs {
     #[command(subcommand)]
-    pub subcommand: Subcommand,
+    pub command: EXTRACTCommands,
 }
 
-#[derive(Subcommand, Debug)]
-pub enum Subcommand {
-    Run {
-        #[arg(help = "The path to the file to refactor", index = 1)]
+#[derive(Subcommand)]
+pub enum EXTRACTCommands {
+    // Run the extraction process with specific arguments
+    Extract {
+        #[arg(help = "The path to the file to refactor")]
         file_path: PathBuf,
 
-        #[arg(help = "The output path for the refactored file", index = 2)]
+        #[arg(help = "The output path for the refactored file")]
         new_file_path: PathBuf,
 
-        #[arg(help = "The start line of the code to extract", index = 3)]
+        #[arg(help = "The start line of the code to extract")]
         start_line: usize,
 
-        #[arg(help = "The end line of the code to extract", index = 4)]
+        #[arg(help = "The end line of the code to extract")]
         end_line: usize,
 
-        #[arg(help = "The name of the new function to create", index = 5)]
+        #[arg(help = "The name of the new function to create")]
         new_fn_name: String,
 
         #[arg(short, long, help = "Enable verbose output", action = ArgAction::SetTrue)]
         verbose: bool,
     },
 
+    // Test the extraction process
     Test {
         #[arg(short, long, help = "Enable verbose output", action = ArgAction::SetTrue)]
         verbose: bool,

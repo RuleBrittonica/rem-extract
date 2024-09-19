@@ -1,43 +1,71 @@
-mod error;
 mod logging;
 mod messages;
 
 mod extraction;
 use extraction::{
-    ExtractionInput,
-    extract_method
+    extract_method,
+    ExtractionInput
 };
 
-
+use log::{
+    // error,
+    info
+};
 
 mod args;
-use args::{};
+use args::{
+    EXTRACTArgs,
+    EXTRACTCommands
+};
+
+mod test;
+use test::test;
+
+mod error;
+
+use clap::Parser;
 
 fn main() {
     logging::init_logging();
 
     info!("Application Started");
 
-    // Path to the Rust source file
-    let file_path = "input/simple_example.rs";
+    let args: EXTRACTArgs = EXTRACTArgs::parse();
 
-    // Specify the line range to extract (0-based indexing)
-    let start_line = 1;  // Corresponds to `let x = 10;`
-    let end_line = 3;    // Corresponds to `let sum = x + y;`
+    match &args.command {
+        EXTRACTCommands::Extract {
+            file_path,
+            new_file_path,
+            start_line,
+            end_line,
+            new_fn_name,
+            verbose,
+        } => {
+            info!("Running 'run' subcommand");
+            info!("File Path: {:?}", file_path);
+            info!("New File Path: {:?}", new_file_path);
+            info!("Start Line: {}", start_line);
+            info!("End Line: {}", end_line);
+            info!("New Function Name: {}", new_fn_name);
+            info!("Verbose: {}", if *verbose { "yes" } else { "no" });
 
-    // Name of the new function to create
-    let new_fn_name = "calculate_sum";
+            let input = ExtractionInput {
+                file_path: file_path.to_string_lossy().to_string(),
+                output_file_path: new_file_path.to_string_lossy().to_string(), // Updated
+                start_line: *start_line,
+                end_line: *end_line,
+                new_fn_name: new_fn_name.to_string(),
+            };
 
-    // Prepare the extraction input
-    let input = ExtractionInput {
-        file_path: file_path.to_string(),
-        start_line,
-        end_line,
-        new_fn_name: new_fn_name.to_string(),
-    };
+            let _modified_code = extract_method(input);
+        }
 
-    // Extract the method and get the modified code
-    let _ = extract_method(input);
+        EXTRACTCommands::Test { verbose } => {
+            info!("Running 'test' subcommand");
+            info!("Verbose: {}", if *verbose { "yes" } else { "no" });
+            test()
+        }
 
-    println!("Modified code has been written and formatted.");
+    }
 }
+

@@ -20,6 +20,7 @@ rem-utils = "0.1.5"
 [build-dependencies]
 
 [dev-dependencies]
+tempfile = "3.12"
 
 [features]
 default = []

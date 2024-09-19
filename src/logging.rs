@@ -1,14 +1,4 @@
-use flexi_logger::{
-    Logger,
-    FileSpec,
-    Criterion,
-    Naming,
-    Cleanup,
-    Age,
-    DeferredNow,
-    Record
-
-};
+use flexi_logger::{Age, Cleanup, Criterion, DeferredNow, FileSpec, Logger, Naming, Record};
 
 pub fn init_logging() {
     Logger::try_with_str("info")
@@ -17,18 +7,17 @@ pub fn init_logging() {
             FileSpec::default()
                 .directory("logs")
                 .basename("rem-cli-log")
-                .suffix("log")
+                .suffix("log"),
         )
         .rotate(
             Criterion::Age(Age::Day), // Rotate Daily
-            Naming::Timestamps, // Use timestamps
-            Cleanup::KeepLogFiles(60)
+            Naming::Timestamps,       // Use timestamps
+            Cleanup::KeepLogFiles(60),
         )
         .format_for_files(format_log_with_timestamp)
         .start()
         .unwrap_or_else(|e| panic!("Logger intialization failed: {}", e));
 }
-
 
 // Custom log formatter function that includes the timestamp.
 fn format_log_with_timestamp(

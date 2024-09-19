@@ -1,21 +1,30 @@
-// extraction.rs
-use syn::{parse_file, Item, Stmt};
-use quote::{quote, format_ident};
-use std::fs;
+use quote::{
+    format_ident,
+    quote
+};
 use rem_utils;
+use std::fs;
+use syn::{
+    parse_file,
+    Item,
+    Stmt
+};
+
+use crate::error::ExtractionError;
 
 #[derive(Debug)]
 pub struct ExtractionInput {
     pub file_path: String,
+    pub output_file_path: String,
     pub start_line: usize,
     pub end_line: usize,
     pub new_fn_name: String,
 }
 
-pub fn extract_method(input: ExtractionInput) -> String {
+pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
     // Read the file and parse it into an AST
-    let source_code = fs::read_to_string(&input.file_path).expect("Failed to read file");
-    let parsed_file = parse_file(&source_code).expect("Failed to parse Rust file");
+    let source_code = fs::read_to_string(&input.file_path)?;
+    let parsed_file = parse_file(&source_code)?;
 
     // Extract the statements in the specified line range
     let mut extracted_stmts: Vec<Stmt> = vec![];
@@ -27,6 +36,10 @@ pub fn extract_method(input: ExtractionInput) -> String {
                 }
             }
         }
+    }
+
+    if extracted_stmts.is_empty() {
+        return Err(ExtractionError::InvalidLineRange);
     }
 
     // Create a valid identifier for the new function name
@@ -59,11 +72,13 @@ pub fn extract_method(input: ExtractionInput) -> String {
     let output_code = format!("{}\n\n{}", modified_code, new_function);
 
     // Write the modified code to the original file
-    fs::write(&input.file_path, &output_code).expect("Failed to write modified code");
+    fs::write(&input.file_path, &output_code)?;
 
     // Call rustfmt on the modified file
-    let _ = rem_utils::fmt_file(&input.file_path, &vec![]).output()
-        .expect("Failed to format the output file with rustfmt");
+    let format_output = rem_utils::fmt_file(&input.file_path, &vec![]).output();
+    if format_output.is_err() {
+        return Err(ExtractionError::FormatError);
+    }
 
-    output_code
+    Ok(output_code)
 }

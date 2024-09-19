@@ -1,5 +1,4 @@
-pub const ABOUT: &str =
-r#" A preprocessing tool for the rem-toolchain.
+pub const ABOUT: &str = r#" A preprocessing tool for the rem-toolchain.
 Takes a source code file and:
     - Extracts a method from the specified line range (just copies and pastes the code)
     - Places the method below the caller function
