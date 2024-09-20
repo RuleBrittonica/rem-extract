@@ -18,9 +18,9 @@ use args::{
     EXTRACTCommands
 };
 
-mod test;
+mod extract_tests;
 mod test_details;
-use test::test;
+use extract_tests::test;
 
 mod error;
 

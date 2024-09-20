@@ -12,7 +12,7 @@ def create_rust_file(csv_file, rust_file):
         csv_reader = csv.DictReader(csvfile)
 
         rustfile.write("use lazy_static::lazy_static;\n")
-        rustfile.write("use crate::test::TestFile;\n\n")
+        rustfile.write("use crate::extract_tests::{TestFile, Cursor};\n\n")
         rustfile.write("lazy_static! {\n")
         rustfile.write("    pub static ref TEST_FILES: Vec<TestFile<'static>> = vec![\n")
 
@@ -25,11 +25,14 @@ def create_rust_file(csv_file, rust_file):
             start_line = int(input_cursor_1.split(',')[0].split()[1]) if input_cursor_1 != 'N/A' else 0
             end_line = int(input_cursor_2.split(',')[0].split()[1]) if input_cursor_2 != 'N/A' else start_line
 
-            rustfile.write(f'        TestFile {{\n')
-            rustfile.write(f'            input_file: "{test_name}.rs",\n')
-            rustfile.write(f'            start_line: {start_line},\n')
-            rustfile.write(f'            end_line: {end_line},\n')
-            rustfile.write(f'        }},\n')
+            start_col = int(input_cursor_1.split(',')[1].split()[1]) if input_cursor_1 != 'N/A' else 0
+            end_col = int(input_cursor_2.split(',')[1].split()[1]) if input_cursor_2 != 'N/A' else start_col
+
+            rustfile.write(f'        TestFile::new(\n')
+            rustfile.write(f'            "{test_name}.rs",\n')
+            rustfile.write(f'            Cursor::new({start_line}, {start_col}),\n')
+            rustfile.write(f'            Cursor::new({end_line}, {end_col}),\n')
+            rustfile.write(f'        ),\n')
 
         rustfile.write("    ];\n")
         rustfile.write("}\n")

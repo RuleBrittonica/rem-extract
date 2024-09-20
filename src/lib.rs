@@ -1,5 +1,5 @@
 pub mod extraction;
 
 mod error;
-mod test;
+mod extract_tests;
 mod test_details;

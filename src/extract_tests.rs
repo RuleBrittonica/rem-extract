@@ -18,13 +18,37 @@ use crate::{
     error::ExtractionError,
 };
 
-pub struct TestFile<'a> {
-    pub input_file: &'a str, // Just the name of the file. It is assumed the file is in ./input, and there is a corresponding file in ./correct_output
-    pub start_line: usize,
-    pub end_line: usize,
-}
+
+
 
 use crate::test_details::TEST_FILES; // Import the test file details from test_details.rs
+
+pub struct Cursor {
+    pub line: usize,
+    pub col: usize,
+}
+
+impl Cursor {
+    pub fn new(line: usize, col: usize) -> Cursor {
+        Cursor { line, col }
+    }
+}
+
+pub struct TestFile<'a> {
+    pub input_file: &'a str, // Just the name of the file. It is assumed the file is in ./input, and there is a corresponding file in ./correct_output
+    pub start_cursor: Cursor,
+    pub end_cursor: Cursor,
+}
+
+impl TestFile<'_> {
+    pub fn new(input_file: &str, start_cursor: Cursor, end_cursor: Cursor) -> TestFile {
+        TestFile {
+            input_file,
+            start_cursor,
+            end_cursor,
+        }
+    }
+}
 
 // Helper function to strip ANSI escape codes
 fn strip_ansi_codes(s: &str) -> String {
@@ -73,8 +97,8 @@ pub fn test() {
         let input = ExtractionInput {
             file_path: input_file_path.clone(),
             output_file_path: output_file_path.clone(),
-            start_line: test_file.start_line,
-            end_line: test_file.end_line,
+            start_line: test_file.start_cursor.line,
+            end_line: test_file.end_cursor.line,
             new_fn_name: "fun_name".to_string(),
         };
 
@@ -219,8 +243,8 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_identical() -> Result<(), ExtractionError> {
         // Create temporary files for expected and output content
-        let mut expected_file = NamedTempFile::new()?;
-        let mut output_file = NamedTempFile::new()?;
+        let expected_file = NamedTempFile::new()?;
+        let output_file = NamedTempFile::new()?;
 
         // Write identical content to both files
         let content = "fn example() -> i32 { 42 }";
@@ -239,8 +263,8 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_different() -> Result<(), ExtractionError> {
         // Create temporary files for expected and output content
-        let mut expected_file = NamedTempFile::new()?;
-        let mut output_file = NamedTempFile::new()?;
+        let expected_file = NamedTempFile::new()?;
+        let output_file = NamedTempFile::new()?;
 
         // Write different content to the files
         let expected_content = "fn example() -> i32 { 42 }";
@@ -274,8 +298,8 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_empty_files() -> Result<(), ExtractionError> {
         // Create temporary files for empty content
-        let mut expected_file = NamedTempFile::new()?;
-        let mut output_file = NamedTempFile::new()?;
+        let expected_file = NamedTempFile::new()?;
+        let output_file = NamedTempFile::new()?;
 
         // Write empty content to both files
         fs::write(expected_file.path(), "")?;
@@ -293,8 +317,8 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_invalid_content() -> Result<(), ExtractionError> {
         // Create temporary files with invalid content
-        let mut expected_file = NamedTempFile::new()?;
-        let mut output_file = NamedTempFile::new()?;
+        let expected_file = NamedTempFile::new()?;
+        let output_file = NamedTempFile::new()?;
 
         // Write invalid content to both files
         let invalid_content = "fn example { 42 "; // Missing closing brace
@@ -313,8 +337,8 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_different_formatting() -> Result<(), ExtractionError> {
         // Create temporary files with the same logical content but different formatting
-        let mut expected_file = NamedTempFile::new()?;
-        let mut output_file = NamedTempFile::new()?;
+        let expected_file = NamedTempFile::new()?;
+        let output_file = NamedTempFile::new()?;
 
         // Write different formatting to the files
         let expected_content = "fn example() -> i32 {\n    42\n}";
