@@ -16,23 +16,9 @@ use crate::{
     extraction::extract_method,
     extraction::ExtractionInput,
     error::ExtractionError,
+    test_details::TEST_FILES, // Import Test Files Information from test_details.rs
+    extraction::Cursor,
 };
-
-
-
-
-use crate::test_details::TEST_FILES; // Import the test file details from test_details.rs
-
-pub struct Cursor {
-    pub line: usize,
-    pub col: usize,
-}
-
-impl Cursor {
-    pub fn new(line: usize, col: usize) -> Cursor {
-        Cursor { line, col }
-    }
-}
 
 pub struct TestFile<'a> {
     pub input_file: &'a str, // Just the name of the file. It is assumed the file is in ./input, and there is a corresponding file in ./correct_output
@@ -46,6 +32,19 @@ impl TestFile<'_> {
             input_file,
             start_cursor,
             end_cursor,
+        }
+    }
+}
+
+// Helper function to convert a TestFile into an ExtractionInput
+impl From<TestFile<'_>> for ExtractionInput {
+    fn from(test_file: TestFile) -> ExtractionInput {
+        ExtractionInput {
+            file_path: format!("./input/{}", test_file.input_file),
+            output_path: format!("./output/{}", test_file.input_file),
+            new_fn_name: "fun_name".to_string(),
+            start_cursor: test_file.start_cursor,
+            end_cursor: test_file.end_cursor,
         }
     }
 }
@@ -94,13 +93,15 @@ pub fn test() {
         let output_file_path: String = format!("./output/{}", test_file.input_file);
         let expected_file_path: String = format!("./correct_output/{}", test_file.input_file);
 
-        let input = ExtractionInput {
-            file_path: input_file_path.clone(),
-            output_file_path: output_file_path.clone(),
-            start_line: test_file.start_cursor.line,
-            end_line: test_file.end_cursor.line,
-            new_fn_name: "fun_name".to_string(),
-        };
+        let input: ExtractionInput = ExtractionInput::new_raw(
+            &input_file_path,
+            &output_file_path,
+            "fun_name",
+            test_file.start_cursor.line,
+            test_file.start_cursor.column,
+            test_file.end_cursor.line,
+            test_file.end_cursor.column,
+        );
 
         // Call the extraction method and handle errors
         let extraction_result: Result<String, ExtractionError> = extract_method(input);

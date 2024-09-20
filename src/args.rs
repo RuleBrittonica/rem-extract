@@ -28,8 +28,14 @@ pub enum EXTRACTCommands {
         #[arg(help = "The start line of the code to extract")]
         start_line: usize,
 
+        #[arg(help = "The column of the cursor on the start line")]
+        start_column: usize,
+
         #[arg(help = "The end line of the code to extract")]
         end_line: usize,
+
+        #[arg(help = "The column of the cursor on the end line")]
+        end_column: usize,
 
         #[arg(help = "The name of the new function to create")]
         new_fn_name: String,

@@ -38,7 +38,9 @@ fn main() {
             file_path,
             new_file_path,
             start_line,
+            start_column,
             end_line,
+            end_column,
             new_fn_name,
             verbose,
         } => {
@@ -50,13 +52,13 @@ fn main() {
             info!("New Function Name: {}", new_fn_name);
             info!("Verbose: {}", if *verbose { "yes" } else { "no" });
 
-            let input = ExtractionInput {
-                file_path: file_path.to_string_lossy().to_string(),
-                output_file_path: new_file_path.to_string_lossy().to_string(), // Updated
-                start_line: *start_line,
-                end_line: *end_line,
-                new_fn_name: new_fn_name.to_string(),
-            };
+            let input = ExtractionInput::new(
+                file_path.to_str().unwrap(),
+                new_file_path.to_str().unwrap(),
+                new_fn_name,
+                extraction::Cursor::new(*start_line, *start_column),
+                extraction::Cursor::new(*end_line, *end_column),
+            );
 
             let _modified_code = extract_method(input);
         }

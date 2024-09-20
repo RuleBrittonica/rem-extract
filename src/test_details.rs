@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
-use crate::extract_tests::{
-    TestFile,
-    Cursor
+use crate::{
+    extraction::Cursor,
+    extract_tests::TestFile,
 };
 
 lazy_static! {

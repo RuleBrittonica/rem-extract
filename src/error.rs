@@ -8,6 +8,7 @@ pub enum ExtractionError {
     Parse(SynError),
     FormatError,
     InvalidLineRange,
+    InvalidColumnRange,
 }
 
 impl fmt::Display for ExtractionError {
@@ -17,6 +18,7 @@ impl fmt::Display for ExtractionError {
             ExtractionError::Parse(e) => write!(f, "Parse error: {}", e),
             ExtractionError::FormatError => write!(f, "Formatting error"),
             ExtractionError::InvalidLineRange => write!(f, "Invalid line range"),
+            ExtractionError::InvalidColumnRange => write!(f, "Invalid column range"),
         }
     }
 }

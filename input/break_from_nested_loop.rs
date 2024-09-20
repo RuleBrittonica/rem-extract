@@ -4,8 +4,8 @@ fn foo() {
         let k = 1;
         loop {
             break;
-        }
-        let m = k + 1;
+        }        let m = k + 1;
         let h = 1 + m;
+
     }
 }
