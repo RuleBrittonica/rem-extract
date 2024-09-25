@@ -1,0 +1,38 @@
+[package]
+name = "rem-extract"
+version = "0.1.0"
+edition = "2021"
+authors = ["Matthew Britton <matt.britton@anu.edu.au>"]
+licence = "MIT"
+description = "Providing extract method capability for the REM toolchain"
+repository = "https://github.com/RuleBrittonica/rem-extract"
+readme = "README.md"
+
+[dependencies]
+log = "0.4.22"
+flexi_logger = "0.29.0"
+clap = { version = "4.5.18", features = ["derive"] }
+colored = "2.1.0"
+syn = { version = "2.0.77", features = ["full"]}
+quote = "1.0.37"
+rem-utils = "0.1.5"
+lazy_static = "1.5.0"
+regex = "1.10.6"
+proc-macro2 = "1.0.86"
+diff = "0.1.13"
+
+# Taken from Rust-Analzyer
+hir.workspace = true
+hir-def.workspace = true
+hir-expand.workspace = true
+hir-ty.workspace = true
+ide-db.workspace = true
+syntax.workspace = true
+
+[build-dependencies]
+
+[dev-dependencies]
+tempfile = "3.12"
+
+[features]
+default = []
