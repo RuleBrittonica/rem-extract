@@ -13,7 +13,7 @@ use crate::{
     assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
 };
 
-pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
+pub use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 
 /// `AssistContext` allows to apply an assist or check if it could be applied.
 ///
@@ -46,15 +46,15 @@ pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 /// moment, because the LSP API is pretty awkward in this place, and it's much
 /// easier to just compute the edit eagerly :-)
 pub struct AssistContext<'a> {
-    pub(crate) config: &'a AssistConfig,
-    pub(crate) sema: Semantics<'a, RootDatabase>,
+    pub config: &'a AssistConfig,
+    pub sema: Semantics<'a, RootDatabase>,
     frange: FileRange,
     trimmed_range: TextRange,
     source_file: SourceFile,
 }
 
 impl<'a> AssistContext<'a> {
-    pub(crate) fn new(
+    pub fn new(
         sema: Semantics<'a, RootDatabase>,
         config: &'a AssistConfig,
         frange: FileRange,
@@ -81,54 +81,54 @@ impl<'a> AssistContext<'a> {
         AssistContext { config, sema, frange, source_file, trimmed_range }
     }
 
-    pub(crate) fn db(&self) -> &RootDatabase {
+    pub fn db(&self) -> &RootDatabase {
         self.sema.db
     }
 
     // NB, this ignores active selection.
-    pub(crate) fn offset(&self) -> TextSize {
+    pub fn offset(&self) -> TextSize {
         self.frange.range.start()
     }
 
-    pub(crate) fn file_id(&self) -> EditionedFileId {
+    pub fn file_id(&self) -> EditionedFileId {
         self.frange.file_id
     }
 
-    pub(crate) fn has_empty_selection(&self) -> bool {
+    pub fn has_empty_selection(&self) -> bool {
         self.trimmed_range.is_empty()
     }
 
     /// Returns the selected range trimmed for whitespace tokens, that is the range will be snapped
     /// to the nearest enclosed token.
-    pub(crate) fn selection_trimmed(&self) -> TextRange {
+    pub fn selection_trimmed(&self) -> TextRange {
         self.trimmed_range
     }
 
-    pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
+    pub fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
         self.source_file.syntax().token_at_offset(self.offset())
     }
-    pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
+    pub fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
         self.token_at_offset().find(|it| it.kind() == kind)
     }
-    pub(crate) fn find_token_at_offset<T: AstToken>(&self) -> Option<T> {
+    pub fn find_token_at_offset<T: AstToken>(&self) -> Option<T> {
         self.token_at_offset().find_map(T::cast)
     }
-    pub(crate) fn find_node_at_offset<N: AstNode>(&self) -> Option<N> {
+    pub fn find_node_at_offset<N: AstNode>(&self) -> Option<N> {
         find_node_at_offset(self.source_file.syntax(), self.offset())
     }
-    pub(crate) fn find_node_at_range<N: AstNode>(&self) -> Option<N> {
+    pub fn find_node_at_range<N: AstNode>(&self) -> Option<N> {
         find_node_at_range(self.source_file.syntax(), self.trimmed_range)
     }
-    pub(crate) fn find_node_at_offset_with_descend<N: AstNode>(&self) -> Option<N> {
+    pub fn find_node_at_offset_with_descend<N: AstNode>(&self) -> Option<N> {
         self.sema.find_node_at_offset_with_descend(self.source_file.syntax(), self.offset())
     }
     /// Returns the element covered by the selection range, this excludes trailing whitespace in the selection.
-    pub(crate) fn covering_element(&self) -> SyntaxElement {
+    pub fn covering_element(&self) -> SyntaxElement {
         self.source_file.syntax().covering_element(self.selection_trimmed())
     }
 }
 
-pub(crate) struct Assists {
+pub struct Assists {
     file: FileId,
     resolve: AssistResolveStrategy,
     buf: Vec<Assist>,
@@ -136,7 +136,7 @@ pub(crate) struct Assists {
 }
 
 impl Assists {
-    pub(crate) fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
+    pub fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
         Assists {
             resolve,
             file: ctx.frange.file_id.file_id(),
@@ -145,12 +145,12 @@ impl Assists {
         }
     }
 
-    pub(crate) fn finish(mut self) -> Vec<Assist> {
+    pub fn finish(mut self) -> Vec<Assist> {
         self.buf.sort_by_key(|assist| assist.target.len());
         self.buf
     }
 
-    pub(crate) fn add(
+    pub fn add(
         &mut self,
         id: AssistId,
         label: impl Into<String>,
@@ -161,7 +161,7 @@ impl Assists {
         self.add_impl(None, id, label.into(), target, &mut |it| f.take().unwrap()(it))
     }
 
-    pub(crate) fn add_group(
+    pub fn add_group(
         &mut self,
         group: &GroupLabel,
         id: AssistId,

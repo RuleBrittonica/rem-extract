@@ -5,8 +5,38 @@ use std::{
         self,
         ErrorKind
     },
+    iter,
+    ops::RangeInclusive,
 };
-use ide_assists::AssistContext;
+use ast::make;
+use either::Either;
+use hir::{
+    HasSource, HirDisplay, InFile, Local, LocalSource, PathResolution, Semantics,
+    TypeInfo, TypeParam,
+};
+use ide_db::{
+    defs::{Definition, NameRefClass},
+    imports::insert_use::ImportScope,
+    search::{FileReference, ReferenceCategory, SearchScope},
+    source_change::SourceChangeBuilder,
+    syntax_helpers::node_ext::{
+        for_each_tail_expr, preorder_expr, walk_expr, walk_pat, walk_patterns_in_expr,
+    },
+    FxIndexSet, RootDatabase,
+};
+use syntax::{
+    ast::{
+        self, edit::IndentLevel, edit_in_place::Indent, AstNode, AstToken, HasGenericParams,
+    },
+    match_ast, ted, Edition, SyntaxElement,
+    SyntaxKind::{self, COMMENT},
+    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, WalkEvent, T,
+};
+
+use ide_assists::assist_context::{
+        AssistContext,
+        TreeMutator,
+    };
 
 use crate::error::ExtractionError;
 
@@ -142,10 +172,6 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     // Get the cursor positions
     let start_cursor: Cursor = input.clone().start_cursor;
     let end_cursor: Cursor = input.clone().end_cursor;
-    let start_line: usize = start_cursor.line;
-    let start_column: usize = start_cursor.column;
-    let end_line: usize = end_cursor.line;
-    let end_column: usize = end_cursor.column;
 
     // Get info about the files
     let input_path: &str = &input.file_path;
@@ -154,17 +180,24 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
 
     verify_input(&input)?;
 
-    // Call out to rust-analyzer to get the context of the file
-    let context: AssistContext = get_assist_context(&input_path)?;
+    // Call out to rust-analyzer to perform the extraction
+    let extracted_code: String = call_rust_analyzer(input_path, start_cursor, end_cursor)?;
 
-    // Implement the logic from rust-analyzer extract_function from here
+    // Write the extracted code to the output file
+    fs::write(output_path, extracted_code.clone())?;
 
-    // TODO: Return the refactored code as a string
-    Ok("".to_string())
+    // format the output file
+    let _ = fmt_file(output_path, &vec![]);
 
+    Ok(extracted_code)
 }
 
-// Calls out to rust-analyzer to get the context of the file
-fn get_assist_context(file_path: &str) -> Result<AssistContext, ExtractionError> {
+// Function to call rust-analyzer to perform the extraction
+// Returns a string containing complete new file
+fn call_rust_analyzer(
+    input_path: &str,
+    start_cursor: Cursor,
+    end_cursor: Cursor,
+) -> Result<String, ExtractionError> {
     todo!()
 }

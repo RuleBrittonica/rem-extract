@@ -58,12 +58,12 @@
 //! See also this post:
 //! <https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html>
 
-mod assist_config;
-mod assist_context;
+pub mod assist_config;
+pub mod assist_context;
 pub mod utils;
 
 pub use crate::assist_context::AssistContext;
-pub(crate) use crate::assist_context::Assists;
+pub use crate::assist_context::Assists;
 
 pub use assist_config::AssistConfig;
 pub use ide_db::assists::{

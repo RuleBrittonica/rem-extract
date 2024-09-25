@@ -552,7 +552,7 @@ fn generate_impl_text_inner(
 
 /// Generates the corresponding `impl Type {}` including type and lifetime
 /// parameters.
-pub(crate) fn generate_impl(adt: &ast::Adt) -> ast::Impl {
+pub fn generate_impl(adt: &ast::Adt) -> ast::Impl {
     generate_impl_inner(adt, None, true)
 }
 

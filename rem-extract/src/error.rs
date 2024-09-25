@@ -13,6 +13,9 @@ pub enum ExtractionError {
     ZeroLineIndex,
     SameCursor,
     AssistContextFailed,
+    FunctionInBraces,
+    Comment,
+    Undefined,
 }
 
 impl fmt::Display for ExtractionError {
@@ -27,6 +30,9 @@ impl fmt::Display for ExtractionError {
             ExtractionError::ZeroLineIndex => write!(f, "Line index must be greater than 0. Cursor is 1-indexed."),
             ExtractionError::SameCursor => write!(f, "Start and end cursors are the same"),
             ExtractionError::AssistContextFailed => write!(f, "Failed to get assist context"),
+            ExtractionError::FunctionInBraces => write!(f, "Function must not be in braces"),
+            ExtractionError::Comment => write!(f, "Cannot Extract Comment"),
+            ExtractionError::Undefined => write!(f, "Undefined error"),
         }
     }
 }

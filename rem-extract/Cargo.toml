@@ -20,8 +20,8 @@ lazy_static = "1.5.0"
 regex = "1.10.6"
 proc-macro2 = "1.0.86"
 diff = "0.1.13"
+cov-mark = "2.0.0-pre.1"
 
-# Taken from Rust-Analzyer
 hir.workspace = true
 hir-def.workspace = true
 hir-expand.workspace = true
@@ -31,6 +31,7 @@ syntax.workspace = true
 itertools.workspace = true
 stdx.workspace = true
 ide-assists.workspace = true
+either.workspace = true
 
 [build-dependencies]
 
