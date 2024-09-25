@@ -1,5 +1,5 @@
-Get together a set of examples I can work towards solving.
+Fix up all of the cursor locations in the extract_tests.py script
+The cursor struct is going to be 1-indexed 
 
-Get a testing framework in place
-
-Start implementing the actual refactoring!
+Get an initial implementation working - I want to be passing at least 10 tests
+by the end of tonight.

@@ -1,28 +1,35 @@
-extern crate syn;
-extern crate quote;
-
+use flexi_logger::init;
 use quote::{
     format_ident,
     quote
 };
 use rem_utils::fmt_file;
-
 use std::{
-    fs,
-    io::{self, ErrorKind},
+    fs::{self, File},
+    io::{
+        self,
+        BufReader,
+        ErrorKind, Read
+    },
 };
 use syn::{
     parse_file,
-    Item,
-    Stmt
+    ItemFn,
+    Block,
+    Ident,
+    Expr,
 };
 
-use crate::error::ExtractionError;
+use crate::{
+    error::ExtractionError,
+    rust_analyzer::size::TextSize,
+    rust_analyzer::range::TextRange,
+};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Cursor {
-    pub line: usize,
-    pub column: usize,
+    pub line: usize, // Line in file, 1-indexed
+    pub column: usize, // Column in line, 1-indexed
 }
 
 impl Cursor {
@@ -31,7 +38,7 @@ impl Cursor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ExtractionInput {
     pub file_path: String,
     pub output_path: String,
@@ -92,6 +99,15 @@ fn check_file_exists(file_path: &str) -> Result<(), ExtractionError> {
 }
 
 fn check_line_numbers(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    // Since the cursor is 1-indexed, we need to check if the line number is 0
+    if input.start_cursor.line == 0 {
+        return Err(ExtractionError::ZeroLineIndex);
+    }
+    // Same for the end cursor
+    if input.end_cursor.line == 0 {
+        return Err(ExtractionError::ZeroLineIndex);
+    }
+
     if input.start_cursor.line > input.end_cursor.line {
         return Err(ExtractionError::InvalidLineRange);
     }
@@ -127,35 +143,127 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 // ========================================
 // Performs the method extraction
 // ========================================
+
+// Function to extract the code segment based on cursor positions
 pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
-    verify_input(&input)?;
 
-    // Read the source code from the file
-    let source_code: String = fs::read_to_string(&input.file_path).map_err(ExtractionError::Io)?;
-
-    // Parse the source code into a syntax tree
-    let syntax_tree: syn::File = parse_file(&source_code).map_err(ExtractionError::Parse)?;
-
-    let start_cursor: Cursor = input.start_cursor;
-    let end_cursor: Cursor = input.end_cursor;
+    // Get the cursor positions
+    let start_cursor: Cursor = input.clone().start_cursor;
+    let end_cursor: Cursor = input.clone().end_cursor;
     let start_line: usize = start_cursor.line;
     let start_column: usize = start_cursor.column;
     let end_line: usize = end_cursor.line;
     let end_column: usize = end_cursor.column;
 
-    // For now, just write the source_code to the output file
-    let output_code = &source_code;
+    // Get info about the files
+    let input_path: &str = &input.file_path;
+    let output_path: &str = &input.output_path;
+    let new_fn_name: &str = &input.new_fn_name;
 
-    // Wrote the formatted code to the output file
-    fs::write(&input.output_path, &output_code).map_err(ExtractionError::Io)?;
+    if (start_line == end_line) && (start_column == end_column) {
+        return Err(ExtractionError::InvalidCursor);
+    }
 
-    // Call rustfmt to format the output file
-    fmt_file(&input.output_path, &vec![]);
+    verify_input(&input)?;
 
-    Ok(output_code.to_string())
+    // Read the source code from the file
+    let source_code: String = fs::read_to_string(input_path).map_err(ExtractionError::Io)?;
+
+    // Get the range of the code (start_line, start_column, end_line,
+    // end_column, minus any leading / trailing whitespace)
+    // At this stage we convert to using rust-analyzers internal representation
+    // of the code to make it easier to eventually transition to merging to
+    // rust-analyzer
+    let initial_range: TextRange = cursor_to_range(input_path, start_cursor, end_cursor)?;
+    let range = trim_whitespace(&source_code, initial_range);
+
+
+    // If the selected code is just a comment, return an error
+
+    // If the
+
+    Ok(source_code)
 
 }
 
 // ========================================
 // Helper functions for extraction
 // ========================================
+
+
+// ========================================
+// Utility functions
+// ========================================
+
+// Converts the cursor representation into a rust-analyzer TextRange
+fn cursor_to_range(
+    input_file_path: &str,
+    start_cursor: Cursor,
+    end_cursor: Cursor
+) -> Result<TextRange, ExtractionError> {
+    let start_offset: TextSize = cursor_to_size(input_file_path, start_cursor)?;
+    let end_offset: TextSize = cursor_to_size(input_file_path, end_cursor)?;
+
+    Ok(TextRange::new(start_offset, end_offset))
+}
+
+// Converts the cursor representation into a rust-analyzer TextSize
+fn cursor_to_size(input_file_path: &str, cursor: Cursor) -> Result<TextSize, ExtractionError> {
+    // Ensure cursor line is non-zero since cursor is 1-indexed
+    if cursor.line == 0 {
+        return Err(ExtractionError::ZeroLineIndex);
+    }
+
+    let lines: Vec<String> = read_lines(input_file_path);
+    let mut count: u32 = 0;
+
+    // Loop over every line, adding the length of the line (including newline)
+    // to the count until we reach the line of the cursor
+    for (i, line) in lines.iter().enumerate() {
+        count += line.len() as u32 + 1;
+        if i + 1 == cursor.line {
+            break;
+        }
+    }
+    // Add the column to the count
+    count += cursor.column as u32;
+
+    Ok(TextSize::from(count))
+
+}
+
+fn read_lines(filename: &str) -> Vec<String> {
+    fs::read_to_string(filename)
+        .unwrap()
+        .lines()
+        .map(String::from)
+        .collect()
+}
+
+// Trims leading and trailing whitespace from a TextRange
+fn trim_whitespace(source_code: &str, range: TextRange) -> TextRange {
+    let trimmed_start = range.start();
+    let trimmed_end = range.end();
+
+    let start = source_code
+        .char_indices()
+        .skip_while(|(i, c)| {
+            if *i == trimmed_start.into() {
+                return c.is_whitespace();
+            }
+            false
+        })
+        .next()
+        .map(|(i, _)| i)
+        .unwrap_or(0);
+
+    let end = source_code
+        .char_indices()
+        .skip(trimmed_end.into())
+        .skip_while(|(_, c)| c.is_whitespace())
+        .next()
+        .map(|(i, _)| i)
+        .unwrap_or(source_code.len());
+
+    TextRange::new(TextSize::from(start as u32), TextSize::from(end as u32))
+}

@@ -12,7 +12,8 @@ def create_rust_file(csv_file, rust_file):
         csv_reader = csv.DictReader(csvfile)
 
         rustfile.write("use lazy_static::lazy_static;\n")
-        rustfile.write("use crate::extract_tests::{TestFile, Cursor};\n\n")
+        rustfile.write("use crate::extract_tests::TestFile;\n")
+        rustfile.write("use crate::extraction::Cursor;\n")
         rustfile.write("lazy_static! {\n")
         rustfile.write("    pub static ref TEST_FILES: Vec<TestFile<'static>> = vec![\n")
 

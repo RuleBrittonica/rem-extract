@@ -25,6 +25,10 @@ def find_cursor_positions(code):
     for line_num, line in enumerate(lines, start=1):
         for match in re.finditer(r'\$0', line):
             cursor_positions.append((line_num, match.start() + 1))  # Columns are 1-based
+    # If the cursors are on the same line, subtract 2 from the column of the
+    # second cursor (since the first cursor will be removed)
+    if len(cursor_positions) == 2 and cursor_positions[0][0] == cursor_positions[1][0]:
+        cursor_positions[1] = (cursor_positions[1][0], cursor_positions[1][1] - 2)
     return cursor_positions
 
 # Function to process each test and generate files and CSV entries
@@ -37,8 +41,10 @@ def process_tests(input_file, csv_file):
         test_blocks = content.split('#[test]')
 
         for test_block in test_blocks[1:]:  # Skip the first element since it's before the first test
+
             test_name_match = test_name_pattern.search(test_block)
             raw_strings = raw_string_pattern.findall(test_block)
+
 
             if test_name_match and len(raw_strings) == 2:
                 test_name = test_name_match.group(1)
