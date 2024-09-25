@@ -127,7 +127,6 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 // ========================================
 // Performs the method extraction
 // ========================================
-
 pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
     verify_input(&input)?;
 
@@ -145,7 +144,7 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     let end_column: usize = end_cursor.column;
 
     // For now, just write the source_code to the output file
-    let output_code = &source_code[start_line..end_line];
+    let output_code = &source_code;
 
     // Wrote the formatted code to the output file
     fs::write(&input.output_path, &output_code).map_err(ExtractionError::Io)?;

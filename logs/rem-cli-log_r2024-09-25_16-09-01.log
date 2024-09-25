@@ -1,0 +1,127 @@
+2024-09-25 16:03:45 [INFO] - Application Started
+2024-09-25 16:03:45 [INFO] - Running 'test' subcommand
+2024-09-25 16:03:45 [INFO] - Verbose: yes
+2024-09-25 16:03:45 [INFO] - Starting tests...
+2024-09-25 16:03:45 [INFO] - Test 1 | PASSED | FAILED: no_args_from_binary_expr in 1.15ms
+2024-09-25 16:03:45 [INFO] - Test 2 | PASSED | FAILED: no_args_from_binary_expr_in_module in 0.80ms
+2024-09-25 16:03:45 [INFO] - Test 3 | PASSED | FAILED: no_args_from_binary_expr_indented in 0.67ms
+2024-09-25 16:03:45 [INFO] - Test 4 | PASSED | Error: Parse error: expected `!`: no_args_from_stmt_with_last_expr in 0.95ms
+2024-09-25 16:03:45 [INFO] - Test 5 | PASSED | Error: Parse error: expected `!`: no_args_from_stmt_unit in 1.19ms
+2024-09-25 16:03:45 [INFO] - Test 6 | PASSED | FAILED: no_args_if in 0.67ms
+2024-09-25 16:03:45 [INFO] - Test 7 | PASSED | FAILED: no_args_if_else in 0.68ms
+2024-09-25 16:03:45 [INFO] - Test 8 | PASSED | FAILED: no_args_if_let_else in 1.07ms
+2024-09-25 16:03:45 [INFO] - Test 9 | PASSED | Error: Parse error: expected `!`: no_args_match in 0.98ms
+2024-09-25 16:03:45 [INFO] - Test 10 | PASSED | FAILED: no_args_while in 0.73ms
+2024-09-25 16:03:45 [INFO] - Test 11 | PASSED | FAILED: no_args_for in 0.66ms
+2024-09-25 16:03:45 [INFO] - Test 12 | PASSED | Error: Parse error: expected `!`: no_args_from_loop_unit in 0.93ms
+2024-09-25 16:03:45 [INFO] - Test 13 | PASSED | Error: Parse error: expected `!`: no_args_from_loop_with_return in 0.83ms
+2024-09-25 16:03:45 [INFO] - Test 14 | PASSED | Error: Parse error: expected `!`: no_args_from_match in 1.04ms
+2024-09-25 16:03:45 [INFO] - Test 15 | PASSED | FAILED: extract_partial_block_single_line in 0.63ms
+2024-09-25 16:03:45 [INFO] - Test 16 | PASSED | Error: Parse error: expected `!`: extract_partial_block in 1.30ms
+2024-09-25 16:03:45 [INFO] - Test 17 | PASSED | FAILED: argument_form_expr in 0.71ms
+2024-09-25 16:03:45 [INFO] - Test 18 | PASSED | FAILED: argument_used_twice_form_expr in 0.70ms
+2024-09-25 16:03:45 [INFO] - Test 19 | PASSED | FAILED: two_arguments_form_expr in 0.84ms
+2024-09-25 16:03:45 [INFO] - Test 20 | PASSED | Error: Parse error: expected `!`: argument_and_locals in 1.13ms
+2024-09-25 16:03:45 [INFO] - Test 21 | PASSED | FAILED: part_of_expr_stmt in 0.45ms
+2024-09-25 16:03:45 [INFO] - Test 22 | PASSED | FAILED: function_expr in 0.65ms
+2024-09-25 16:03:45 [INFO] - Test 23 | FAILED: Parse error: expected `,` | N/A: extract_from_nested in 0.58ms
+2024-09-25 16:03:45 [INFO] - Test 24 | PASSED | FAILED: param_from_closure in 0.74ms
+2024-09-25 16:03:45 [INFO] - Test 25 | PASSED | FAILED: extract_return_stmt in 0.70ms
+2024-09-25 16:03:45 [INFO] - Test 26 | PASSED | FAILED: does_not_add_extra_whitespace in 0.53ms
+2024-09-25 16:03:45 [INFO] - Test 27 | PASSED | FAILED: break_stmt in 0.72ms
+2024-09-25 16:03:45 [INFO] - Test 28 | PASSED | FAILED: extract_cast in 0.72ms
+2024-09-25 16:03:45 [INFO] - Test 29 | PASSED | FAILED: method_to_freestanding in 0.83ms
+2024-09-25 16:03:45 [INFO] - Test 30 | PASSED | Error: Parse error: expected one of: `fn`, `extern`, `use`, `static`, `const`, `unsafe`, `mod`, `type`, `struct`, `enum`, `union`, `trait`, `auto`, `impl`, `default`, `macro`, identifier, `self`, `super`, `crate`, `::`: method_with_reference in 0.74ms
+2024-09-25 16:03:45 [INFO] - Test 31 | PASSED | Error: Parse error: expected one of: `fn`, `extern`, `use`, `static`, `const`, `unsafe`, `mod`, `type`, `struct`, `enum`, `union`, `trait`, `auto`, `impl`, `default`, `macro`, identifier, `self`, `super`, `crate`, `::`: method_with_mut in 0.50ms
+2024-09-25 16:03:45 [INFO] - Test 32 | PASSED | FAILED: variable_defined_inside_and_used_after_no_ret in 0.78ms
+2024-09-25 16:03:45 [INFO] - Test 33 | PASSED | FAILED: variable_defined_inside_and_used_after_mutably_no_ret in 1.00ms
+2024-09-25 16:03:45 [INFO] - Test 34 | PASSED | Error: Parse error: expected `!`: two_variables_defined_inside_and_used_after_no_ret in 1.28ms
+2024-09-25 16:03:45 [INFO] - Test 35 | PASSED | Error: Parse error: expected `!`: multi_variables_defined_inside_and_used_after_mutably_no_ret in 1.12ms
+2024-09-25 16:03:45 [INFO] - Test 36 | PASSED | FAILED: nontrivial_patterns_define_variables in 1.09ms
+2024-09-25 16:03:45 [INFO] - Test 37 | FAILED: Parse error: expected one of: `fn`, `extern`, `use`, `static`, `const`, `unsafe`, `mod`, `type`, `struct`, `enum`, `union`, `trait`, `auto`, `impl`, `default`, `macro`, identifier, `self`, `super`, `crate`, `::` | N/A: struct_with_two_fields_pattern_define_variables in 0.64ms
+2024-09-25 16:03:45 [INFO] - Test 38 | PASSED | FAILED: mut_var_from_outer_scope in 0.65ms
+2024-09-25 16:03:45 [INFO] - Test 39 | PASSED | FAILED: mut_field_from_outer_scope in 0.77ms
+2024-09-25 16:03:45 [INFO] - Test 40 | PASSED | Error: Parse error: expected `!`: mut_nested_field_from_outer_scope in 1.27ms
+2024-09-25 16:03:45 [INFO] - Test 41 | PASSED | Error: Parse error: cannot parse string into token stream: mut_param_many_usages_stmt in 1.54ms
+2024-09-25 16:03:45 [INFO] - Test 42 | PASSED | Error: Parse error: cannot parse string into token stream: mut_param_many_usages_expr in 1.80ms
+2024-09-25 16:03:45 [INFO] - Test 43 | PASSED | Error: Parse error: expected `!`: mut_param_because_of_mut_ref in 0.86ms
+2024-09-25 16:03:45 [INFO] - Test 44 | PASSED | FAILED: mut_method_call in 0.86ms
+2024-09-25 16:03:45 [INFO] - Test 45 | PASSED | FAILED: copy_used_after in 0.93ms
+2024-09-25 16:03:45 [INFO] - Test 46 | PASSED | FAILED: copy_custom_used_after in 0.83ms
+2024-09-25 16:03:45 [INFO] - Test 47 | PASSED | Error: Parse error: expected `!`: indented_stmts in 0.99ms
+2024-09-25 16:03:45 [INFO] - Test 48 | PASSED | Error: Parse error: expected `!`: indented_stmts_inside_mod in 0.76ms
+2024-09-25 16:03:45 [INFO] - Test 49 | PASSED | Error: Parse error: expected one of: `fn`, `extern`, `use`, `static`, `const`, `unsafe`, `mod`, `type`, `struct`, `enum`, `union`, `trait`, `auto`, `impl`, `default`, `macro`, identifier, `self`, `super`, `crate`, `::`: break_loop in 1.04ms
+2024-09-25 16:03:45 [INFO] - Test 50 | PASSED | Error: Parse error: expected `!`: return_to_parent in 1.16ms
+2024-09-25 16:03:45 [INFO] - Test 51 | PASSED | Error: Parse error: expected one of: `fn`, `extern`, `use`, `static`, `const`, `unsafe`, `mod`, `type`, `struct`, `enum`, `union`, `trait`, `auto`, `impl`, `default`, `macro`, identifier, `self`, `super`, `crate`, `::`: break_loop_with_if in 0.78ms
+2024-09-25 16:03:45 [INFO] - Test 52 | PASSED | Error: Parse error: expected `!`: break_loop_nested in 0.95ms
+2024-09-25 16:03:45 [INFO] - Test 53 | PASSED | FAILED: break_loop_nested_labeled in 0.63ms
+2024-09-25 16:03:45 [INFO] - Test 54 | PASSED | FAILED: continue_loop_nested_labeled in 0.68ms
+2024-09-25 16:03:45 [INFO] - Test 55 | PASSED | Error: Parse error: expected `!`: return_from_nested_loop in 1.11ms
+2024-09-25 16:03:45 [INFO] - Test 56 | PASSED | Error: Parse error: expected `!`: break_from_nested_loop in 0.86ms
+2024-09-25 16:03:45 [INFO] - Test 57 | PASSED | Error: Parse error: cannot parse string into token stream: break_from_nested_and_outer_loops in 1.21ms
+2024-09-25 16:03:45 [INFO] - Test 58 | PASSED | Error: Parse error: expected `!`: return_from_nested_fn in 0.73ms
+2024-09-25 16:03:45 [INFO] - Test 59 | PASSED | Error: Parse error: expected `!`: break_with_value in 1.11ms
+2024-09-25 16:03:45 [INFO] - Test 60 | PASSED | Error: Parse error: expected `!`: break_with_value_and_label in 1.43ms
+2024-09-25 16:03:45 [INFO] - Test 61 | PASSED | Error: Parse error: expected `!`: break_with_value_and_return in 0.86ms
+2024-09-25 16:03:45 [INFO] - Test 62 | PASSED | Error: Parse error: expected `!`: try_option in 0.82ms
+2024-09-25 16:03:45 [INFO] - Test 63 | PASSED | Error: Parse error: expected `!`: try_option_unit in 0.65ms
+2024-09-25 16:03:45 [INFO] - Test 64 | PASSED | Error: Parse error: expected `!`: try_result in 0.86ms
+2024-09-25 16:03:45 [INFO] - Test 65 | PASSED | Error: Parse error: expected `!`: try_option_with_return in 1.21ms
+2024-09-25 16:03:45 [INFO] - Test 66 | PASSED | Error: Parse error: expected `!`: try_result_with_return in 0.84ms
+2024-09-25 16:03:45 [INFO] - Test 67 | PASSED | Error: Parse error: expected `!`: try_and_return_ok in 1.03ms
+2024-09-25 16:03:45 [INFO] - Test 68 | PASSED | FAILED: param_usage_in_macro in 0.48ms
+2024-09-25 16:03:45 [INFO] - Test 69 | PASSED | FAILED: param_usage_in_macro_with_nested_tt in 0.74ms
+2024-09-25 16:03:45 [INFO] - Test 70 | PASSED | FAILED: param_usage_in_macro_with_nested_tt_2 in 0.79ms
+2024-09-25 16:03:45 [INFO] - Test 71 | PASSED | FAILED: extract_with_await in 1.02ms
+2024-09-25 16:03:45 [INFO] - Test 72 | PASSED | FAILED: extract_with_await_and_result_not_producing_match_expr in 1.18ms
+2024-09-25 16:03:45 [INFO] - Test 73 | PASSED | Error: Parse error: expected `!`: extract_with_await_and_result_producing_match_expr in 1.39ms
+2024-09-25 16:03:45 [INFO] - Test 74 | PASSED | FAILED: extract_with_await_in_args in 0.83ms
+2024-09-25 16:03:45 [INFO] - Test 75 | PASSED | Error: Parse error: expected `!`: extract_does_not_tear_comments_apart in 0.68ms
+2024-09-25 16:03:45 [INFO] - Test 76 | FAILED: Invalid line range | N/A: extract_does_not_tear_body_apart in 0.28ms
+2024-09-25 16:03:45 [INFO] - Test 77 | PASSED | FAILED: extract_does_not_wrap_res_in_res in 0.90ms
+2024-09-25 16:03:45 [INFO] - Test 78 | PASSED | FAILED: extract_mut_ref_param_has_no_mut_binding_in_loop in 1.11ms
+2024-09-25 16:03:45 [INFO] - Test 79 | PASSED | FAILED: extract_with_macro_arg in 1.08ms
+2024-09-25 16:03:45 [INFO] - Test 80 | PASSED | FAILED: unresolveable_types_default_to_placeholder in 1.05ms
+2024-09-25 16:03:45 [INFO] - Test 81 | PASSED | FAILED: reference_mutable_param_with_further_usages in 0.56ms
+2024-09-25 16:03:45 [INFO] - Test 82 | PASSED | FAILED: reference_mutable_param_without_further_usages in 0.75ms
+2024-09-25 16:03:45 [INFO] - Test 83 | PASSED | FAILED: does_not_import_control_flow in 0.73ms
+2024-09-25 16:03:45 [INFO] - Test 84 | PASSED | Error: Parse error: expected `!`: extract_function_copies_comment_at_start in 0.72ms
+2024-09-25 16:03:45 [INFO] - Test 85 | PASSED | Error: Parse error: expected `!`: extract_function_copies_comment_in_between in 0.70ms
+2024-09-25 16:03:45 [INFO] - Test 86 | PASSED | Error: Parse error: expected `!`: extract_function_copies_comment_at_end in 0.92ms
+2024-09-25 16:03:45 [INFO] - Test 87 | PASSED | Error: Parse error: expected `!`: extract_function_copies_comment_indented in 1.04ms
+2024-09-25 16:03:45 [INFO] - Test 88 | PASSED | Error: Parse error: expected `!`: extract_function_does_preserve_whitespace in 0.79ms
+2024-09-25 16:03:45 [INFO] - Test 89 | PASSED | Error: Parse error: expected `!`: extract_function_long_form_comment in 0.89ms
+2024-09-25 16:03:45 [INFO] - Test 90 | PASSED | FAILED: it_should_not_generate_duplicate_function_names in 0.49ms
+2024-09-25 16:03:45 [INFO] - Test 91 | PASSED | FAILED: should_increment_suffix_until_it_finds_space in 0.62ms
+2024-09-25 16:03:45 [INFO] - Test 92 | PASSED | FAILED: extract_method_from_trait_impl in 0.88ms
+2024-09-25 16:03:45 [INFO] - Test 93 | PASSED | FAILED: extract_method_from_trait_with_existing_non_empty_impl_block in 0.76ms
+2024-09-25 16:03:45 [INFO] - Test 94 | PASSED | FAILED: extract_function_from_trait_with_existing_non_empty_impl_block in 1.43ms
+2024-09-25 16:03:45 [INFO] - Test 95 | PASSED | FAILED: extract_method_from_trait_with_multiple_existing_impl_blocks in 0.81ms
+2024-09-25 16:03:45 [INFO] - Test 96 | PASSED | FAILED: extract_method_from_trait_with_multiple_existing_trait_impl_blocks in 1.44ms
+2024-09-25 16:03:45 [INFO] - Test 97 | PASSED | FAILED: closure_arguments in 0.93ms
+2024-09-25 16:03:45 [INFO] - Test 98 | PASSED | FAILED: preserve_generics in 0.95ms
+2024-09-25 16:03:45 [INFO] - Test 99 | PASSED | FAILED: dont_emit_type_with_hidden_lifetime_parameter in 0.94ms
+2024-09-25 16:03:45 [INFO] - Test 100 | PASSED | FAILED: preserve_generics_from_body in 0.61ms
+2024-09-25 16:03:45 [INFO] - Test 101 | PASSED | FAILED: filter_unused_generics in 1.10ms
+2024-09-25 16:03:45 [INFO] - Test 102 | PASSED | FAILED: empty_generic_param_list in 0.67ms
+2024-09-25 16:03:45 [INFO] - Test 103 | PASSED | FAILED: preserve_where_clause in 0.61ms
+2024-09-25 16:03:45 [INFO] - Test 104 | PASSED | FAILED: filter_unused_where_clause in 0.67ms
+2024-09-25 16:03:45 [INFO] - Test 105 | PASSED | FAILED: nested_generics in 1.26ms
+2024-09-25 16:03:45 [INFO] - Test 106 | PASSED | FAILED: filters_unused_nested_generics in 1.24ms
+2024-09-25 16:03:45 [INFO] - Test 107 | PASSED | FAILED: nested_where_clauses in 0.88ms
+2024-09-25 16:03:45 [INFO] - Test 108 | PASSED | FAILED: filters_unused_nested_where_clauses in 1.39ms
+2024-09-25 16:03:45 [INFO] - Test 109 | PASSED | Error: Parse error: expected `!`: tail_expr_no_extra_control_flow in 0.69ms
+2024-09-25 16:03:45 [INFO] - Test 110 | PASSED | Error: Parse error: expected `!`: non_tail_expr_of_tail_expr_loop in 0.78ms
+2024-09-25 16:03:45 [INFO] - Test 111 | PASSED | Error: Parse error: expected `!`: non_tail_expr_of_tail_if_block in 1.14ms
+2024-09-25 16:03:45 [INFO] - Test 112 | PASSED | Error: Parse error: expected `!`: tail_expr_of_tail_block_nested in 0.69ms
+2024-09-25 16:03:45 [INFO] - Test 113 | PASSED | Error: Parse error: unexpected end of input, expected identifier: non_tail_expr_with_comment_of_tail_expr_loop in 0.80ms
+2024-09-25 16:03:45 [INFO] - Test 114 | PASSED | Error: Parse error: cannot parse string into token stream: comments_in_block_expr in 0.63ms
+2024-09-25 16:03:45 [INFO] - ------------------------------------------------------------------
+2024-09-25 16:03:45 [INFO] - Total tests run: 114
+2024-09-25 16:03:45 [INFO] - Tests passed stage 1: 111
+2024-09-25 16:03:45 [INFO] - Tests passed: 0
+2024-09-25 16:03:45 [INFO] - Tests failed: 114
+2024-09-25 16:03:45 [INFO] - Total time: 527.32ms
+2024-09-25 16:03:45 [INFO] - Average time per test: 0.89ms
+2024-09-25 16:03:45 [INFO] - Shortest test time: 0.28ms
+2024-09-25 16:03:45 [INFO] - Longest test time: 1.80ms
