@@ -8,7 +8,7 @@ use syntax::{
     AstNode, T,
 };
 
-use crate::utils::AssistContext;
+use crate::AssistContext;
 
 /// Decides whether the new path expression needs to be dereferenced and/or wrapped in parens.
 /// Returns the relevant parent expression to replace and the [RefData].

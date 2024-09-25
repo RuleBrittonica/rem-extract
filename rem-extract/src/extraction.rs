@@ -1,23 +1,12 @@
-use quote::{
-    format_ident,
-    quote
-};
 use rem_utils::fmt_file;
 use std::{
-    fs::{self, File},
+    fs::{self},
     io::{
         self,
-        BufReader,
-        ErrorKind, Read
+        ErrorKind
     },
 };
-use syn::{
-    parse_file,
-    ItemFn,
-    Block,
-    Ident,
-    Expr,
-};
+use ide_assists::AssistContext;
 
 use crate::error::ExtractionError;
 
@@ -126,11 +115,20 @@ fn check_columns(input: &ExtractionInput) -> Result<(), ExtractionError> {
     Ok(())
 }
 
+fn check_cursor_not_equal(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    if input.start_cursor == input.end_cursor {
+        return Err(ExtractionError::SameCursor);
+    }
+
+    Ok(())
+}
+
 fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
     // Execute each input validation step one by one
     check_file_exists(&input.file_path)?;
     check_line_numbers(input)?;
     check_columns(input)?;
+    check_cursor_not_equal(input)?;
 
     Ok(())
 }
@@ -141,7 +139,6 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 
 // Function to extract the code segment based on cursor positions
 pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
-
     // Get the cursor positions
     let start_cursor: Cursor = input.clone().start_cursor;
     let end_cursor: Cursor = input.clone().end_cursor;
@@ -155,31 +152,19 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     let output_path: &str = &input.output_path;
     let new_fn_name: &str = &input.new_fn_name;
 
-    if (start_line == end_line) && (start_column == end_column) {
-        return Err(ExtractionError::InvalidCursor);
-    }
-
     verify_input(&input)?;
 
-    // Read the source code from the file
-    let source_code: String = fs::read_to_string(input_path).map_err(ExtractionError::Io)?;
+    // Call out to rust-analyzer to get the context of the file
+    let context: AssistContext = get_assist_context(&input_path)?;
 
-    // Get the range of the code (start_line, start_column, end_line,
-    // end_column, minus any leading / trailing whitespace)
-    // At this stage, we reach out to rust-analyzer to get the AssistContext -
-    // from there we can get everything else we need!
+    // Implement the logic from rust-analyzer extract_function from here
 
-
-
-    Ok(source_code)
+    // TODO: Return the refactored code as a string
+    Ok("".to_string())
 
 }
 
-// ========================================
-// Helper functions for extraction
-// ========================================
-
-
-// ========================================
-// Utility functions
-// ========================================
+// Calls out to rust-analyzer to get the context of the file
+fn get_assist_context(file_path: &str) -> Result<AssistContext, ExtractionError> {
+    todo!()
+}

@@ -45,7 +45,7 @@ pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 /// Note, however, that we don't actually use such two-phase logic at the
 /// moment, because the LSP API is pretty awkward in this place, and it's much
 /// easier to just compute the edit eagerly :-)
-pub(crate) struct AssistContext<'a> {
+pub struct AssistContext<'a> {
     pub(crate) config: &'a AssistConfig,
     pub(crate) sema: Semantics<'a, RootDatabase>,
     frange: FileRange,

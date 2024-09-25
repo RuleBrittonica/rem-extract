@@ -11,6 +11,8 @@ pub enum ExtractionError {
     InvalidColumnRange,
     InvalidCursor,
     ZeroLineIndex,
+    SameCursor,
+    AssistContextFailed,
 }
 
 impl fmt::Display for ExtractionError {
@@ -23,6 +25,8 @@ impl fmt::Display for ExtractionError {
             ExtractionError::InvalidColumnRange => write!(f, "Invalid column range"),
             ExtractionError::InvalidCursor => write!(f, "Invalid cursor"),
             ExtractionError::ZeroLineIndex => write!(f, "Line index must be greater than 0. Cursor is 1-indexed."),
+            ExtractionError::SameCursor => write!(f, "Start and end cursors are the same"),
+            ExtractionError::AssistContextFailed => write!(f, "Failed to get assist context"),
         }
     }
 }
