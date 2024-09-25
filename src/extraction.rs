@@ -1,8 +1,12 @@
+extern crate syn;
+extern crate quote;
+
 use quote::{
     format_ident,
     quote
 };
 use rem_utils::fmt_file;
+
 use std::{
     fs,
     io::{self, ErrorKind},
@@ -72,6 +76,10 @@ impl ExtractionInput {
     }
 }
 
+// ========================================
+// Checks for the validity of the input
+// ========================================
+
 // Check if the file exists and is readable
 fn check_file_exists(file_path: &str) -> Result<(), ExtractionError> {
     if fs::metadata(file_path).is_err() {
@@ -115,66 +123,40 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 
     Ok(())
 }
+
+// ========================================
+// Performs the method extraction
+// ========================================
+
 pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
     verify_input(&input)?;
 
-    // Read the file and parse it into an AST
-    let source_code: String = fs::read_to_string(&input.file_path)?;
-    let parsed_file = parse_file(&source_code)?;
+    // Read the source code from the file
+    let source_code: String = fs::read_to_string(&input.file_path).map_err(ExtractionError::Io)?;
 
-    // Extract the statements in the specified line range
-    let mut extracted_stmts: Vec<Stmt> = vec![];
-    for item in parsed_file.items {
-        if let Item::Fn(ref func) = item {
-            for (i, stmt) in func.block.stmts.iter().enumerate() {
-                if i >= input.start_cursor.line && i <= input.end_cursor.line {
-                    extracted_stmts.push(stmt.clone());
-                }
-            }
-        }
-    }
+    // Parse the source code into a syntax tree
+    let syntax_tree: syn::File = parse_file(&source_code).map_err(ExtractionError::Parse)?;
 
-    if extracted_stmts.is_empty() {
-        return Err(ExtractionError::InvalidLineRange);
-    }
+    let start_cursor: Cursor = input.start_cursor;
+    let end_cursor: Cursor = input.end_cursor;
+    let start_line: usize = start_cursor.line;
+    let start_column: usize = start_cursor.column;
+    let end_line: usize = end_cursor.line;
+    let end_column: usize = end_cursor.column;
 
-    // Create a valid identifier for the new function name
-    let new_fn_ident = format_ident!("{}", input.new_fn_name);
+    // For now, just write the source_code to the output file
+    let output_code = &source_code[start_line..end_line];
 
-    // Create the new function using `quote!`
-    let new_function = quote! {
-        fn #new_fn_ident() {
-            #(#extracted_stmts)*
-        }
-    };
+    // Wrote the formatted code to the output file
+    fs::write(&input.output_path, &output_code).map_err(ExtractionError::Io)?;
 
-    // Replace the original lines with a call to the new function
-    let modified_code: String = source_code
-        .lines()
-        .enumerate()
-        .map(|(i, line)| {
-            if i == input.start_cursor.line {
-                format!("{}();", input.new_fn_name) // Insert a call to the new function
-            } else if i > input.start_cursor.line && i <= input.end_cursor.line {
-                String::new() // Remove the lines that were extracted
-            } else {
-                line.to_string()
-            }
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
+    // Call rustfmt to format the output file
+    fmt_file(&input.output_path, &vec![]);
 
-    // Add the new function at the end of the file
-    let output_code: String = format!("{}\n\n{}", modified_code, new_function);
+    Ok(output_code.to_string())
 
-    // Write the modified code to the output path
-    fs::write(&input.output_path, &output_code)?;
-
-    // Call rustfmt on the modified file
-    let format_output = fmt_file(&input.output_path, &vec![]).output();
-    if format_output.is_err() {
-        return Err(ExtractionError::FormatError);
-    }
-
-    Ok(output_code)
 }
+
+// ========================================
+// Helper functions for extraction
+// ========================================

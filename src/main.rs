@@ -20,7 +20,10 @@ use args::{
 
 mod extract_tests;
 mod test_details;
-use extract_tests::test;
+use extract_tests::{
+    test,
+    test_verbose,
+};
 
 mod error;
 
@@ -66,7 +69,11 @@ fn main() {
         EXTRACTCommands::Test { verbose } => {
             info!("Running 'test' subcommand");
             info!("Verbose: {}", if *verbose { "yes" } else { "no" });
-            test()
+            if *verbose {
+                test_verbose();
+            } else {
+                test();
+            }
         }
 
     }
