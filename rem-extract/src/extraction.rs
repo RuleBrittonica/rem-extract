@@ -19,11 +19,7 @@ use syn::{
     Expr,
 };
 
-use crate::{
-    error::ExtractionError,
-    rust_analyzer_local::size::TextSize,
-    rust_analyzer_local::range::TextRange,
-};
+use crate::error::ExtractionError;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Cursor {

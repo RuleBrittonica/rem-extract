@@ -1,8 +1,0 @@
-2024-09-19 17:04:29 [INFO] - Application Started
-2024-09-19 17:04:29 [INFO] - Running 'run' subcommand
-2024-09-19 17:04:29 [INFO] - File Path: "input/simple_example.rs"
-2024-09-19 17:04:29 [INFO] - New File Path: "output/simple_example.rs"
-2024-09-19 17:04:29 [INFO] - Start Line: 1
-2024-09-19 17:04:29 [INFO] - End Line: 3
-2024-09-19 17:04:29 [INFO] - New Function Name: new_function
-2024-09-19 17:04:29 [INFO] - Verbose: no

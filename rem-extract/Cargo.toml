@@ -28,6 +28,9 @@ hir-expand.workspace = true
 hir-ty.workspace = true
 ide-db.workspace = true
 syntax.workspace = true
+itertools.workspace = true
+stdx.workspace = true
+ide-assists.workspace = true
 
 [build-dependencies]
 
@@ -36,3 +39,7 @@ tempfile = "3.12"
 
 [features]
 default = []
+
+[[bin]]
+name = "rem-extract"
+path = "src/main.rs"

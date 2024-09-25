@@ -1,8 +1,0 @@
-2024-09-19 17:04:03 [INFO] - Application Started
-2024-09-19 17:04:03 [INFO] - Running 'run' subcommand
-2024-09-19 17:04:03 [INFO] - File Path: "C:/Program Files/Git/input/simple_example.rs"
-2024-09-19 17:04:03 [INFO] - New File Path: "C:/Program Files/Git/output/simple_example.rs"
-2024-09-19 17:04:03 [INFO] - Start Line: 1
-2024-09-19 17:04:03 [INFO] - End Line: 3
-2024-09-19 17:04:03 [INFO] - New Function Name: new_function
-2024-09-19 17:04:03 [INFO] - Verbose: no

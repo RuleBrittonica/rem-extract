@@ -21,7 +21,7 @@ repository = "https://github.com/RuleBrittonica/rem-extract"
 [workspace.dependencies]
 # Local Crates
 base-db = { path = "rust_analyzer/base-db" }
-cfg = { path = "rust_analyzer/cfg" }
+cfg = { path = "rust_analyzer/cfg", features = ["tt"] }
 hir = { path = "rust_analyzer/hir" }
 hir-def = { path = "rust_analyzer/hir-def" }
 hir-expand = { path = "rust_analyzer/hir-expand" }
@@ -45,6 +45,7 @@ test-fixture = { path = "./rust_analyzer/test-fixture" }
 project-model = { path = "./rust_analyzer/project-model" }
 toolchain = { path = "./rust_analyzer/toolchain" }
 ide-db = { path = "./rust_analyzer/ide-db" }
+ide-assists = { path = "./rust_analyzer/ide-assists" }
 
 
 ra-ap-rustc_lexer = { version = "0.63.0", default-features = false }

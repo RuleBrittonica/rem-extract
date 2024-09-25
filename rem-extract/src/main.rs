@@ -7,8 +7,6 @@ use extraction::{
     ExtractionInput
 };
 
-mod rust_analyzer_local;
-
 use log::{
     // error,
     info
