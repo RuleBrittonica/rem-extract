@@ -16,10 +16,10 @@ for filename in os.listdir(input_directory):
         project_name = os.path.splitext(filename)[0]
 
         # Define the path for the new project
-        project_path = os.path.join(os.getcwd(), project_name)
+        project_path = os.path.join(input_directory, project_name)
 
         # Create a new Rust project
-        subprocess.run(['cargo', 'new', project_name])
+        subprocess.run(['cargo', 'new', '--bin', project_name], cwd=input_directory)
 
         # Define the path for the main.rs file in the new project
         main_rs_path = os.path.join(project_path, 'src', 'main.rs')
@@ -31,7 +31,19 @@ for filename in os.listdir(input_directory):
         with open(original_rs_path, 'r') as original_file:
             code = original_file.read()
 
+        # Write the original code to main.rs
         with open(main_rs_path, 'w') as main_file:
             main_file.write(code)
 
-        print(f"Created project '{project_name}' with main.rs from '{filename}'")
+        # Clear the contents of main.rs to remove the default `fn main`
+        with open(main_rs_path, 'w') as main_file:
+            main_file.write("")  # Clear the file
+
+        # Write the original code to main.rs again
+        with open(main_rs_path, 'w') as main_file:
+            main_file.write(code)
+
+        # Delete the original .rs file
+        os.remove(original_rs_path)
+
+        print(f"Created project '{project_name}' in '{input_directory}' and deleted original file '{filename}'")
