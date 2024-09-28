@@ -6,3 +6,7 @@ fn foo() -> i64 {
     let k = 2;
     (n + k) as i64
 }
+
+fn main() {
+
+}

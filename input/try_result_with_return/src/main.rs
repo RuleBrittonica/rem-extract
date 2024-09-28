@@ -9,3 +9,7 @@ fn foo() -> Result<(), i64> {
     let h = 1 + m;
     Ok(())
 }
+
+fn main() {
+
+}

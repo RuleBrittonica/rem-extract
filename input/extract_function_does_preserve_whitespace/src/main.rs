@@ -4,3 +4,7 @@ fn func() {
 
     let x = 0;
 }
+
+fn main() {
+
+}

@@ -3,3 +3,7 @@ fn parent(factor: i32) {
 
     v.iter().map(|it| it * factor);
 }
+
+fn main() {
+
+}

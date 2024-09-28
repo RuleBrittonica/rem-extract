@@ -3,3 +3,7 @@ fn foo() {
         let m = 1;
     }
 }
+
+fn main() {
+
+}

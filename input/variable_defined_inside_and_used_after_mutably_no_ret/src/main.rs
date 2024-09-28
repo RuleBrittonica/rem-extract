@@ -3,3 +3,7 @@ fn foo() {
     let mut k = n * n;
     k += 1;
 }
+
+fn main() {
+
+}

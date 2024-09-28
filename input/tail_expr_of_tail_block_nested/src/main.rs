@@ -13,3 +13,7 @@ fn f() -> Option<()> {
         None
     }
 }
+
+fn main() {
+
+}

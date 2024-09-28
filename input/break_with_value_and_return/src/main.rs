@@ -9,3 +9,7 @@ fn foo() -> i64 {
         let h = 1 + m;
     }
 }
+
+fn main() {
+
+}

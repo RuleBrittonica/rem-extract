@@ -4,3 +4,7 @@ fn foo() {
     let m = n;
     let k = n;
 }
+
+fn main() {
+
+}

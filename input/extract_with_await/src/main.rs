@@ -6,3 +6,7 @@ fn main() {
 async fn some_function() {
 
 }
+
+fn main() {
+
+}

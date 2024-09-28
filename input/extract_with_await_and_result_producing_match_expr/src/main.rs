@@ -10,3 +10,7 @@ async fn foo() -> i32 {
         let h = 1 + m;
     }
 }
+
+fn main() {
+
+}

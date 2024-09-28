@@ -13,3 +13,7 @@ impl Trait for Struct {
         self.0 + three_squared
     }
 }
+
+fn main() {
+
+}

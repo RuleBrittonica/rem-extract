@@ -5,3 +5,7 @@ impl <T, U> Struct<T, U> where T: Into<i32> + Copy, U: Debug {
         t.into() + v.into()
     }
 }
+
+fn main() {
+
+}

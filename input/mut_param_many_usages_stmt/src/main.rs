@@ -19,3 +19,7 @@ fn foo() {
     n.succ();
     let m = n + 1;
 }
+
+fn main() {
+
+}

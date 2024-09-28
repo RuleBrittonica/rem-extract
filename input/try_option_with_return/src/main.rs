@@ -9,3 +9,7 @@ fn foo() -> Option<()> {
     let h = 1 + m;
     Some(())
 }
+
+fn main() {
+
+}

@@ -4,3 +4,7 @@ fn foo() {
     *v += 1;
     let k = n;
 }
+
+fn main() {
+
+}

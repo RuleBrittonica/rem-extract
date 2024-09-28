@@ -8,3 +8,7 @@ fn foo() {
         let h = 1 + n;
     }
 }
+
+fn main() {
+
+}

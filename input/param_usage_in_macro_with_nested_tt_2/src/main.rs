@@ -10,3 +10,7 @@ impl S {
         let m = k + 1;
     }
 }
+
+fn main() {
+
+}

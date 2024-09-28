@@ -9,3 +9,7 @@ pub fn f() {
         }
     }
 }
+
+fn main() {
+
+}

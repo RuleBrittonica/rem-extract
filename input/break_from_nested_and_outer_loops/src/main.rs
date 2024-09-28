@@ -12,3 +12,7 @@ fn foo() {
         let h = 1 + m;
     }
 }
+
+fn main() {
+
+}

@@ -9,3 +9,7 @@ fn foo() {
         let h = 1;
     }
 }
+
+fn main() {
+
+}

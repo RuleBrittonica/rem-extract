@@ -21,3 +21,7 @@ fn foo() {
     }
     let m = n + 1;
 }
+
+fn main() {
+
+}

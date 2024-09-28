@@ -7,3 +7,7 @@ fn foo() {
     let k = n * m!(n);
     let m = k + 1;
 }
+
+fn main() {
+
+}

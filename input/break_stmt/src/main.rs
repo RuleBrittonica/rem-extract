@@ -3,3 +3,7 @@ fn main() {
         break 2 + 2;
     };
 }
+
+fn main() {
+
+}

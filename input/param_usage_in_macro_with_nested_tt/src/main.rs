@@ -8,3 +8,7 @@ fn foo() {
     let k = n * m!((n) + { t });
     let m = k + 1;
 }
+
+fn main() {
+
+}

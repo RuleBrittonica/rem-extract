@@ -4,3 +4,7 @@ fn func() {
     // comment here!
     let x = 0;
 }
+
+fn main() {
+
+}

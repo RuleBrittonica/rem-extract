@@ -3,3 +3,7 @@ fn func() {
     /* a comment */
     let x = 0;
 }
+
+fn main() {
+
+}

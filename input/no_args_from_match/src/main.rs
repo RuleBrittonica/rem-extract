@@ -4,3 +4,7 @@ fn foo() {
         None => 0,
     };
 }
+
+fn main() {
+
+}

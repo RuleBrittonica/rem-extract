@@ -8,3 +8,7 @@ fn foo() {
     let r = &mut v.p.n;
     let m = c.p.n + v.p.n + u.p.n;
 }
+
+fn main() {
+
+}

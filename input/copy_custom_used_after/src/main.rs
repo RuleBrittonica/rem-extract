@@ -6,3 +6,7 @@ fn foo() {
     let n = c.0;
     let m = c.0;
 }
+
+fn main() {
+
+}

@@ -4,3 +4,7 @@ fn foo() {
         break m;
     };
 }
+
+fn main() {
+
+}

@@ -5,3 +5,7 @@ fn func() {
         // comment here!
     }
 }
+
+fn main() {
+
+}

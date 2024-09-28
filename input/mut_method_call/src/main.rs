@@ -8,3 +8,7 @@ fn foo() {
     let mut n = 1;
     n.inc();
 }
+
+fn main() {
+
+}

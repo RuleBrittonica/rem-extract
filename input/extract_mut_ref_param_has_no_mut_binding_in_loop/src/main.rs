@@ -10,3 +10,7 @@ fn foo() {
     }
     let z = x;
 }
+
+fn main() {
+
+}

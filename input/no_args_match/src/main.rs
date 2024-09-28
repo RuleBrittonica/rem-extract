@@ -4,3 +4,7 @@ fn foo() -> i32 {
         false => 2,
     }
 }
+
+fn main() {
+
+}

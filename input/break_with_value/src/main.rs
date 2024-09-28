@@ -9,3 +9,7 @@ fn foo() -> i32 {
         let h = 1;
     }
 }
+
+fn main() {
+
+}

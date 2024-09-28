@@ -7,3 +7,7 @@ fn foo() {
     k += o;
     m = 1;
 }
+
+fn main() {
+
+}

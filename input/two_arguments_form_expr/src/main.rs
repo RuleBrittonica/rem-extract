@@ -3,3 +3,7 @@ fn foo() -> u32 {
     let m = 3;
     n+n*m
 }
+
+fn main() {
+
+}

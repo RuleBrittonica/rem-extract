@@ -5,3 +5,7 @@ pub struct Foo {
 pub fn testfn(arg: &mut Foo) {
     arg.field = 8;
 }
+
+fn main() {
+
+}

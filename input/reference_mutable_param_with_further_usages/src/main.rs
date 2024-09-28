@@ -7,3 +7,7 @@ pub fn testfn(arg: &mut Foo) {
     // Simulating access after the extracted portion
     arg.field = 16;
 }
+
+fn main() {
+
+}

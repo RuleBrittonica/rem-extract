@@ -5,3 +5,7 @@ impl <T: Into<i32> + Copy> Struct<T> {
         t.into() + v.into()
     }
 }
+
+fn main() {
+
+}

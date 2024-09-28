@@ -8,3 +8,7 @@ mod bar {
         }
     }
 }
+
+fn main() {
+
+}

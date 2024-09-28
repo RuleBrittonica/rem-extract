@@ -3,3 +3,7 @@ mod bar {
         foo(1 + 1);
     }
 }
+
+fn main() {
+
+}

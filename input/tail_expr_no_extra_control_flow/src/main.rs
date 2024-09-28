@@ -5,3 +5,7 @@ fn fallible() -> Result<(), ()> {
     }
     Ok(())
 }
+
+fn main() {
+
+}

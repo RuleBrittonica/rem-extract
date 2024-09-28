@@ -5,3 +5,7 @@ fn main() {
         _ => (0, false)
     };
 }
+
+fn main() {
+
+}
