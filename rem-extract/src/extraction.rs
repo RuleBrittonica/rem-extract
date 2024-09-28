@@ -1,42 +1,9 @@
 use rem_utils::fmt_file;
-use std::{
-    fs::{self},
-    io::{
-        self,
-        ErrorKind
-    },
-    iter,
-    ops::RangeInclusive,
-};
-use ast::make;
-use either::Either;
-use hir::{
-    HasSource, HirDisplay, InFile, Local, LocalSource, PathResolution, Semantics,
-    TypeInfo, TypeParam,
-};
-use ide_db::{
-    defs::{Definition, NameRefClass},
-    imports::insert_use::ImportScope,
-    search::{FileReference, ReferenceCategory, SearchScope},
-    source_change::SourceChangeBuilder,
-    syntax_helpers::node_ext::{
-        for_each_tail_expr, preorder_expr, walk_expr, walk_pat, walk_patterns_in_expr,
-    },
-    FxIndexSet, RootDatabase,
-};
-use syntax::{
-    ast::{
-        self, edit::IndentLevel, edit_in_place::Indent, AstNode, AstToken, HasGenericParams,
-    },
-    match_ast, ted, Edition, SyntaxElement,
-    SyntaxKind::{self, COMMENT},
-    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, WalkEvent, T,
-};
 
-use ide_assists::assist_context::{
-        AssistContext,
-        TreeMutator,
-    };
+use std::{
+    fs,
+    io::{self, ErrorKind},
+};
 
 use crate::error::ExtractionError;
 
