@@ -1,4 +1,4 @@
-struct S { f: i32 }
+struct S { f: i32 };
 
 impl S {
     fn foo(&mut self) {

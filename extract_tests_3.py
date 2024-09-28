@@ -56,6 +56,3 @@ for folder in os.listdir(input_directory):
         main_rs_path = os.path.join(input_directory, folder, 'src', 'main.rs')
         with open(main_rs_path, 'a') as main_file:
             main_file.write("\n\nfn main() {\n\n}\n")
-
-        # Run rustfmt to format the code
-        subprocess.run(['rustfmt', "--edition 2021", main_rs_path])
