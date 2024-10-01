@@ -6,6 +6,7 @@ use syn::Error as SynError;
 pub enum ExtractionError {
     Io(io::Error),
     Parse(SynError),
+    InvalidManifest,
     FormatError,
     InvalidLineRange,
     InvalidColumnRange,
@@ -23,6 +24,7 @@ impl fmt::Display for ExtractionError {
         match self {
             ExtractionError::Io(e) => write!(f, "I/O error: {}", e),
             ExtractionError::Parse(e) => write!(f, "Parse error: {}", e),
+            ExtractionError::InvalidManifest => write!(f, "Could not find a manifest file for the given path"),
             ExtractionError::FormatError => write!(f, "Formatting error"),
             ExtractionError::InvalidLineRange => write!(f, "Invalid line range"),
             ExtractionError::InvalidColumnRange => write!(f, "Invalid column range"),

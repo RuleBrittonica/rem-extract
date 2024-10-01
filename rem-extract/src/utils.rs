@@ -1,11 +1,12 @@
 //! Utility functions for the rem-extract crate.
 //! At some point these will be merged into rem-utils.
 
-use crate::extraction::{
-    Cursor,
+use crate::{
+    extraction::Cursor,
+    error::ExtractionError,
 };
 
-use std::path::PathBuf;
+use std::{fs, path::{Path, PathBuf}};
 
 use ra_ap_project_model::{
     CargoConfig,
@@ -66,11 +67,42 @@ pub fn cursor_to_offset( cursor: &Cursor ) -> u32 {
 /// TODO
 /// Returns the path to the manifest directory of the given file
 /// The manifest directory is the directory containing the Cargo.toml file
-pub fn get_manifest_dir( path: &PathBuf ) -> PathBuf {
+/// for the project.
+///
+/// ### Example
+/// Given a directory structure like:
+/// ```plaintext
+/// /path/to/project
+/// ├── Cargo.toml
+/// └── src
+///    └── main.rs
+/// ```
+/// The manifest directory of `main.rs` is `/path/to/project`
+pub fn get_manifest_dir( path: &PathBuf ) -> Result<PathBuf, ExtractionError> {
+    // Start from the directory of the file
+    let mut current_dir = if path.is_file() {
+        path.parent().unwrap_or(path)
+    } else {
+        path.as_path()
+    };
 
+    // Check if the current directory is the root and contains a Cargo.toml file
+    if fs::metadata(current_dir.join("Cargo.toml")).is_ok() {
+        return Ok(current_dir.to_path_buf());
+    }
 
-    PathBuf::new()
+    // Traverse up the directory tree until a Cargo.toml file is found
+    while let Some(parent) = current_dir.parent() {
+        if fs::metadata(current_dir.join("Cargo.toml")).is_ok() {
+            return Ok(current_dir.to_path_buf());
+        }
+        current_dir = parent;
+    }
+
+    // Return an InvalidManifest error if no Cargo.toml file is found
+    Err(ExtractionError::InvalidManifest)
 }
+
 
 /// Given a `PathBuf` to a folder, returns the `AbsPathBuf` to the `Cargo.toml`
 /// file in that folder.
@@ -223,18 +255,14 @@ fn get_assists (
 /// Filter the list of assists to only be the extract_function assist
 /// FIXME This is a hack to get around the fact that the resolve strategy is bugged
 /// and is returning both extract_variable and extract_function
-pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> &Assist {
-    assists
+pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Assist {
+    let extract_assist = assists
         .iter()
         .find( |assist| assist.label == "Extract into function" )
         .unwrap()
-}
+        .clone();
 
-/// Converts a `VfsPath` to a `PathBuf`
-pub fn vfs_to_pathbuf( vfs_path: &VfsPath ) -> PathBuf {
-    let path_str = vfs_path.to_string();
-    // println!("{}", path_str);
-    PathBuf::from( path_str )
+    extract_assist
 }
 
 pub fn apply_extract_function(
@@ -242,7 +270,8 @@ pub fn apply_extract_function(
     manifest_dir: &PathBuf,
     vfs: &Vfs,
     path_components: &Vec<&str>, // Vec of path components, e.g. [ "src", "main.rs" ]
-    out_components: &Vec<&str>, // Vec of path components, e.g. [ "output", "simple.rs" ]
+    output_path: &AbsPathBuf,
+    callee_name: &str,
 ) -> PathBuf {
     // Copy the source file to the output directory
     let mut in_file_path: PathBuf = manifest_dir.clone();
@@ -255,14 +284,9 @@ pub fn apply_extract_function(
             .to_string(),
     );
 
-    // The output is derived from the project directory
-    let mut out_file_path: PathBuf = get_manifest_dir( "./" );
-    for component in out_components {
-        out_file_path = out_file_path.join( component );
-    }
     let vfs_out_path: VfsPath = VfsPath::new_real_path(
-        out_file_path
-            .to_string_lossy()
+        output_path
+            .as_str()
             .to_string(),
     );
 
@@ -291,7 +315,7 @@ pub fn apply_extract_function(
     rename_function(
         &vfs_out_path,
         "fun_name",
-        NEW_FUNCTION_NAME,
+        callee_name,
     );
 
     // Return the output file path
@@ -329,4 +353,107 @@ fn rename_function(
     let new_name: String = new_name.to_string();
     text = text.replace( &old_name, &new_name );
     std::fs::write( &path, text ).unwrap();
+}
+
+/// Converts a `VfsPath` to a `PathBuf`
+fn vfs_to_pathbuf( vfs_path: &VfsPath ) -> PathBuf {
+    let path_str = vfs_path.to_string();
+    // println!("{}", path_str);
+    PathBuf::from( path_str )
+}
+
+/// Copies a file from one `VfsPath` to another `VfsPath`
+fn copy_file_vfs(
+    source: &VfsPath,
+    destination: &VfsPath,
+) -> () {
+    // Copy the file
+    let from: PathBuf = vfs_to_pathbuf( source );
+    let to: PathBuf = vfs_to_pathbuf( destination );
+    let _ = std::fs::copy(from, to).unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use std::io::Write;
+    use std::env;
+
+    // Helper function to create a temporary directory with a Cargo.toml
+    fn setup_temp_project() -> PathBuf {
+        let temp_dir = env::temp_dir().join("test_project");
+        let _ = fs::create_dir_all(&temp_dir);
+        let cargo_toml = temp_dir.join("Cargo.toml");
+
+        let mut file = File::create(cargo_toml).unwrap();
+        writeln!(file, "[package]\nname = \"test_project\"\nversion = \"0.1.0\"").unwrap();
+
+        temp_dir
+    }
+
+    // Test case when Cargo.toml exists
+    #[test]
+    fn test_get_manifest_dir_valid() {
+        let temp_dir = setup_temp_project();
+        let src_dir = temp_dir.join("src");
+        let _ = fs::create_dir_all(&src_dir);
+        let main_file = src_dir.join("main.rs");
+        File::create(&main_file).unwrap();
+
+        let result = get_manifest_dir(&main_file);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), temp_dir);
+    }
+
+    // Test case when Cargo.toml does not exist
+    #[test]
+    fn test_get_manifest_dir_invalid_manifest() {
+        let temp_dir = env::temp_dir().join("test_invalid_project");
+        let _ = fs::create_dir_all(&temp_dir);
+        let src_dir = temp_dir.join("src");
+        let _ = fs::create_dir_all(&src_dir);
+        let main_file = src_dir.join("main.rs");
+        File::create(&main_file).unwrap();
+
+        let result = get_manifest_dir(&main_file);
+        assert!(result.is_err());
+
+        // Check that the error is an InvalidManifest
+        if let ExtractionError::InvalidManifest = result.unwrap_err() {
+            // Correct error type
+        } else {
+            panic!("Expected InvalidManifest error");
+        }
+    }
+
+    // Test case when the path is to a directory, not a file
+    #[test]
+    fn test_get_manifest_dir_directory() {
+        let temp_dir = setup_temp_project();
+        let src_dir = temp_dir.join("src");
+        let _ = fs::create_dir_all(&src_dir);
+
+        let result = get_manifest_dir(&src_dir);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), temp_dir);
+    }
+
+    // Test case when the path points to a non-existent file
+    #[test]
+    fn test_get_manifest_dir_non_existent_file() {
+        let temp_dir = env::temp_dir().join("test_non_existent_project");
+        let src_dir = temp_dir.join("src");
+
+        let non_existent_file = src_dir.join("does_not_exist.rs");
+        let result = get_manifest_dir(&non_existent_file);
+        assert!(result.is_err());
+
+        // Check that the error is an InvalidManifest
+        if let ExtractionError::InvalidManifest = result.unwrap_err() {
+            // Correct error type
+        } else {
+            panic!("Expected InvalidManifest error");
+        }
+    }
 }
