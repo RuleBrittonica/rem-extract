@@ -2,6 +2,7 @@ use std::{
     fs,
     time::Instant,
     time::Duration,
+    path::PathBuf,
 };
 use syn::{
     parse_file,
@@ -125,7 +126,7 @@ pub fn test() {
         );
 
         // Call the extraction method and handle errors
-        let extraction_result: Result<String, ExtractionError> = extract_method(input);
+        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -291,7 +292,7 @@ pub fn test_verbose() {
         );
 
         // Call the extraction method and handle errors
-        let extraction_result: Result<String, ExtractionError> = extract_method(input);
+        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
