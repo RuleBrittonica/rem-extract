@@ -111,9 +111,9 @@ pub fn test() {
 
         total_tests += 1;
 
-        let input_file_path: String = format!("./input/{}/src/main.rs", test_file.input_file);
-        let output_file_path: String = format!("./output/{}.rs", test_file.input_file);
-        let expected_file_path: String = format!("./correct_output/{}.rs", test_file.input_file);
+        let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
+        let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
+        let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
 
         let input: ExtractionInput = ExtractionInput::new_raw(
             &input_file_path,
@@ -277,9 +277,9 @@ pub fn test_verbose() {
 
         total_tests += 1;
 
-        let input_file_path: String = format!("./input/{}/src/main.rs", test_file.input_file);
-        let output_file_path: String = format!("./output/{}.rs", test_file.input_file);
-        let expected_file_path: String = format!("./correct_output/{}.rs", test_file.input_file);
+        let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
+        let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
+        let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
 
         let input: ExtractionInput = ExtractionInput::new_raw(
             &input_file_path,

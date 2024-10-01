@@ -1,12 +1,64 @@
 use rem_utils::fmt_file;
 
 use std::{
-    fs,
-    io::{self, ErrorKind},
-    path::PathBuf,
+    convert, fs, io::{self, ErrorKind}, path::PathBuf
 };
 
-use crate::error::ExtractionError;
+use ra_ap_project_model::{
+    CargoConfig,
+    ProjectWorkspace,
+    ProjectManifest,
+};
+
+use ra_ap_ide::{
+    Analysis,
+    AnalysisHost,
+    DiagnosticsConfig,
+    FilePosition,
+    FileRange,
+    RootDatabase,
+    SingleResolve,
+    TextRange,
+    TextSize,
+    TextEdit,
+    SnippetEdit,
+    SourceChange,
+};
+
+use ra_ap_ide_db::{
+    imports::insert_use::{
+        ImportGranularity,
+        InsertUseConfig,
+        PrefixKind,
+    }, rename, SnippetCap
+};
+
+use ra_ap_ide_assists::{
+    Assist,
+    AssistConfig,
+    AssistKind,
+    AssistResolveStrategy,
+};
+
+use ra_ap_vfs::{
+    AbsPathBuf,
+    VfsPath,
+    Vfs,
+    FileId,
+};
+
+use ra_ap_load_cargo::{
+    LoadCargoConfig,
+    ProcMacroServerChoice,
+    load_workspace,
+};
+
+use crate::{
+    error::ExtractionError,
+    extraction_utils::{
+        convert_to_abs_path_buf,
+    },
+};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Cursor {
@@ -147,7 +199,13 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
     let output_path: &str = &input.output_path;
     let new_fn_name: &str = &input.new_fn_name;
 
+    // Convert the output path to an `AbsPathBuf`
+    let output_abs_path: AbsPathBuf = convert_to_abs_path_buf(output_path).unwrap();
+    // print!("Output Path: {:?}", output_abs_path);
+
     verify_input(&input)?;
+
+
 
     Ok(PathBuf::new())
 }

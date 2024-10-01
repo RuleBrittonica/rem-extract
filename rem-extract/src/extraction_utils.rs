@@ -6,7 +6,13 @@ use crate::{
     error::ExtractionError,
 };
 
-use std::{fs, path::{Path, PathBuf}};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    env,
+};
+
+use camino::Utf8PathBuf;
 
 use ra_ap_project_model::{
     CargoConfig,
@@ -64,7 +70,6 @@ pub fn cursor_to_offset( cursor: &Cursor ) -> u32 {
    0 as u32
 }
 
-/// TODO
 /// Returns the path to the manifest directory of the given file
 /// The manifest directory is the directory containing the Cargo.toml file
 /// for the project.
@@ -103,6 +108,48 @@ pub fn get_manifest_dir( path: &PathBuf ) -> Result<PathBuf, ExtractionError> {
     Err(ExtractionError::InvalidManifest)
 }
 
+/// Given an `&str` path to a file, returns the `AbsPathBuf` to the file.
+/// The `AbsPathBuf` is used by the `ra_ap` crates to represent file paths.
+/// If the input is not an absolute path, it resulves the path relative to the
+/// current directory.
+/// Will also canonicalize the path before returning it.
+pub fn convert_to_abs_path_buf(path: &str) -> Result<AbsPathBuf, Utf8PathBuf> {
+    if path.is_empty() {
+        return Err(Utf8PathBuf::from_path_buf(PathBuf::new()).unwrap());
+    }
+
+    // Check if the path is valid for a file system
+    if !path.is_ascii() {
+        return Err(Utf8PathBuf::from_path_buf(PathBuf::new()).unwrap());
+    }
+
+    // Attempt to convert it as-is (absolute path).
+    match AbsPathBuf::try_from(path) {
+        Ok(abs_path_buf) => Ok(abs_path_buf),
+        Err(_) => {
+            // Resolve non-absolute path to the current working directory.
+            let current_dir = env::current_dir().expect("Failed to get current directory");
+            let utf8_current_dir = Utf8PathBuf::from_path_buf(current_dir)
+                .expect("Failed to convert current directory to Utf8PathBuf");
+
+            // println!("Current dir: {:?}", utf8_current_dir);
+            // println!("Current path: {:?}", path);
+            let resolved_path = utf8_current_dir.join(path);
+
+            // Normalize the path to eliminate unnecessary components
+            let normalized_path = resolved_path.canonicalize().unwrap_or(resolved_path.clone().into());
+
+            // Create directories leading to the resolved path if they don't exist
+            if let Some(parent) = normalized_path.parent() {
+                fs::create_dir_all(parent).expect("Failed to create directories");
+            }
+
+            // Attempt to convert the normalized path to AbsPathBuf
+            AbsPathBuf::try_from(normalized_path.to_str().unwrap())
+                .map_err(|e| e) // Return the error if the resolved path is still invalid
+        }
+    }
+}
 
 /// Given a `PathBuf` to a folder, returns the `AbsPathBuf` to the `Cargo.toml`
 /// file in that folder.
@@ -265,6 +312,10 @@ pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Assist {
     extract_assist
 }
 
+/// Copies the source file to the output file path.
+/// Applies the extract_function source change to the output file.
+/// Renames the function from `fun_name` to `callee_name`.
+/// Requires the output path to be an `AbsPathBuf`.
 pub fn apply_extract_function(
     assist: &Assist,
     manifest_dir: &PathBuf,
@@ -301,13 +352,11 @@ pub fn apply_extract_function(
     let (text_edit, maybe_snippet_edit) = src_change.get_source_and_snippet_edit(
         in_file_id
     ).unwrap();
-    let text_edit: TextEdit = text_edit.clone();
-    let maybe_snippet_edit: Option<SnippetEdit> = maybe_snippet_edit.clone();
 
     apply_edits(
         &vfs_out_path,
-        text_edit,
-        maybe_snippet_edit,
+        text_edit.clone(),
+        maybe_snippet_edit.clone(),
     );
 
     // Rename the function from fun_name to NEW_FUNCTION_NAME using a search and
@@ -379,6 +428,7 @@ mod tests {
     use std::fs::{self, File};
     use std::io::Write;
     use std::env;
+    use camino::Utf8Path;
 
     // Helper function to create a temporary directory with a Cargo.toml
     fn setup_temp_project() -> PathBuf {
@@ -455,5 +505,85 @@ mod tests {
         } else {
             panic!("Expected InvalidManifest error");
         }
+    }
+
+    #[test]
+    fn test_absolute_path_windows() {
+        // Test with an absolute path (Windows-style)
+        let abs_path = r"C:\Windows\System32";
+        let result = convert_to_abs_path_buf(abs_path);
+        assert!(result.is_ok(), "Expected absolute path conversion to succeed");
+
+        // Check if the path remains unchanged
+        let abs_path_buf = result.unwrap();
+        assert_eq!(<AbsPathBuf as AsRef<Utf8Path>>::as_ref(&abs_path_buf), Utf8Path::new(abs_path));
+    }
+
+    #[test]
+    fn test_relative_path_windows() {
+        // Test with a relative path (Windows-style)
+        let rel_path = r"src\main.rs";
+        let result = convert_to_abs_path_buf(rel_path);
+        assert!(result.is_ok(), "Expected relative path conversion to succeed");
+
+        // Check if the relative path is resolved to an absolute path
+        let current_dir = env::current_dir().unwrap();
+        let expected_abs_path = Utf8PathBuf::from_path_buf(current_dir).unwrap().join(rel_path);
+        let abs_path_buf = result.unwrap();
+
+        // Compare the canonicalized paths
+        let left_path = <AbsPathBuf as AsRef<Utf8Path>>::as_ref(&abs_path_buf).to_string().replace(r"\\?\", "");
+        let right_path = expected_abs_path.as_path().to_string().replace(r"\\?\", "");
+        assert_eq!(left_path, right_path);
+    }
+
+    #[test]
+    fn test_invalid_utf8_path_windows() {
+        // Test with a path that cannot be converted to a valid UTF-8 path
+        let invalid_utf8_path = r"C:\invalid\�path";
+        let result = convert_to_abs_path_buf(invalid_utf8_path);
+        assert!(result.is_err(), "Expected invalid UTF-8 path to fail conversion");
+    }
+
+    #[test]
+    fn test_empty_path_windows() {
+        // Test with an empty path
+        let empty_path = "";
+        let result = convert_to_abs_path_buf(empty_path);
+        assert!(result.is_err(), "Expected empty path to fail conversion");
+    }
+
+    #[test]
+    fn test_root_path_windows() {
+        // Test with a root path (Windows-style)
+        let root_path = r"C:\";
+        let result = convert_to_abs_path_buf(root_path);
+        assert!(result.is_ok(), "Expected root path conversion to succeed");
+
+        let abs_path_buf = result.unwrap();
+        assert_eq!(<AbsPathBuf as AsRef<Utf8Path>>::as_ref(&abs_path_buf), Utf8Path::new(root_path));
+    }
+
+    #[test]
+    fn test_resolve_relative_path_windows() {
+        // Test with a complex relative path (Windows-style)
+        let complex_rel_path = r"src\..\Cargo.toml";
+        let result = convert_to_abs_path_buf(complex_rel_path);
+        assert!(result.is_ok(), "Expected complex relative path conversion to succeed");
+
+        // Check if the relative path is resolved correctly
+        let current_dir = env::current_dir().unwrap();
+        let expected_abs_path = Utf8PathBuf::from_path_buf(current_dir)
+            .unwrap()
+            .join(complex_rel_path)
+            .canonicalize_utf8()
+            .unwrap();
+        let abs_path_buf = result.unwrap();
+
+        // Compare the canonicalized paths
+        let left_path = <AbsPathBuf as AsRef<Utf8Path>>::as_ref(&abs_path_buf).to_string().replace(r"\\?\", "");
+        let right_path = expected_abs_path.as_path().to_string().replace(r"\\?\", "");
+        assert_eq!(left_path, right_path);
+
     }
 }
