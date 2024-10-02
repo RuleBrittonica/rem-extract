@@ -29,7 +29,25 @@ for filename in os.listdir(input_directory):
         project_path = os.path.join(input_directory, project_name)
 
         # Create a new Rust project
-        subprocess.run(['cargo', 'new', '--bin', project_name], cwd=input_directory)
+        result = subprocess.run(
+            ['cargo', 'new', '--bin', project_name],
+            cwd=input_directory,
+            capture_output=True,
+            text=True
+        )
+
+        # Filter out tje see more line
+        filtered_stdout = "\n".join(
+            line for line in result.stdout.splitlines()
+            if "see more `Cargo.toml` keys and their definitions" not in line
+        )
+        print(filtered_stdout)
+
+        filtered_stderr = "\n".join(
+            line for line in result.stderr.splitlines()
+            if "see more `Cargo.toml` keys and their definitions" not in line
+        )
+        print(filtered_stderr)
 
         # Define the path for the main.rs file in the new project
         main_rs_path = os.path.join(project_path, 'src', 'main.rs')

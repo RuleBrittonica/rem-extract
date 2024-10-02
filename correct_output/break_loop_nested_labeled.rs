@@ -14,3 +14,7 @@ fn fun_name() -> ControlFlow<()> {
     return ControlFlow::Break(());
     ControlFlow::Continue(())
 }
+
+fn main() {
+
+}

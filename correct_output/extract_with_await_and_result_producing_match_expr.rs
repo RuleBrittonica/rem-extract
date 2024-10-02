@@ -17,3 +17,7 @@ async fn fun_name() -> Result<i32, i32> {
     let m = k + 1;
     Ok(m)
 }
+
+fn main() {
+
+}

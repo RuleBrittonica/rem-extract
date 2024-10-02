@@ -6,3 +6,7 @@ fn func<T: Debug, U: Copy>(i: T, u: U) {
 fn fun_name<T: Debug>(i: T) {
     foo(i);
 }
+
+fn main() {
+
+}

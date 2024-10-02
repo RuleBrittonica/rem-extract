@@ -14,3 +14,7 @@ fn foo() {
 fn fun_name(y: &mut Foo) {
     y.foo();
 }
+
+fn main() {
+
+}

@@ -19,23 +19,22 @@ test_name_pattern = re.compile(r'fn (\w+)\(')
 raw_string_pattern = re.compile(r'r#"(.*?)"#', re.DOTALL)
 
 # Function to find cursor positions ($0) in the code
-def find_cursor_positions(code):
-    cursor_positions = []
+def find_cursor_position(code):
+    cursor_index = code.find('$0')
+    return cursor_index
 
-    # Find the first occurrence of $0
-    first_pos = code.find('$0')
-    if first_pos != -1:
-        cursor_positions.append(first_pos)  # Store the position of the first cursor
-
-        # Remove the first occurrence of $0
-        code = code[:first_pos] + code[first_pos + 2:]  # Remove '$0'
-
-        # Find the next occurrence of $0 in the modified code
-        second_pos = code.find('$0')
-        if second_pos != -1:
-            cursor_positions.append(second_pos)  # Adjust position for the removal of the first '$0'
-
-    return cursor_positions
+# Returns the distance between the end of the first cursor and the start of the
+# second cursor
+# E.g., for the code:
+# fn foo() {
+#     foo($01 + 1$0);
+# }
+# We would return 5 (len(" + 1") = 5)
+def distance_between_cursors(code):
+    cursor_indices = [m.start() for m in re.finditer(r'\$0', code)]
+    if len(cursor_indices) < 2:
+        return 0
+    return cursor_indices[1] - cursor_indices[0] - 2  # Subtract 2 to account for the $0 characters
 
 # Function to process each test and generate files and CSV entries
 def process_tests(input_file, csv_file):
@@ -58,35 +57,24 @@ def process_tests(input_file, csv_file):
                 output_code = raw_strings[1].strip()  # Remove leading and trailing whitespace
 
                 # Find cursor positions in the input code
-                input_cursors = find_cursor_positions(input_code)
+                input_cursor_1 = find_cursor_position(input_code)
+                distance_between_cursors_ = distance_between_cursors(input_code)
+                input_cursor_2 = input_cursor_1 + distance_between_cursors_
 
-                # Write input and output files after removing the first cursor
-                if len(input_cursors) >= 2:
-                    input_code_cleaned = input_code.replace('$0', '')
-                    output_code_cleaned = output_code.replace('$0', '')
+                print(f"Processing test: {test_name}, Input cursor 1: {input_cursor_1}, Input cursor 2: {input_cursor_2}")
 
-                    with open(os.path.join(input_dir, f'{test_name}.rs'), 'w') as infile:
-                        infile.write(input_code_cleaned)
-                    with open(os.path.join(output_dir, f'{test_name}.rs'), 'w') as outfile:
-                        outfile.write(output_code_cleaned)
 
-                    # Write character-based cursor information to CSV
-                    csv_writer.writerow([test_name, input_cursors[0] - 1, input_cursors[1] + 1])
+                input_code_cleaned = input_code.replace('$0', '')
+                output_code_cleaned = output_code.replace('$0', '')
 
-                elif len(input_cursors) == 1:
-                    input_code_cleaned = input_code.replace('$0', '')  # Only one cursor to remove
-                    output_code_cleaned = output_code.replace('$0', '')
+                with open(os.path.join(input_dir, f'{test_name}.rs'), 'w') as infile:
+                    infile.write(input_code_cleaned)
+                with open(os.path.join(output_dir, f'{test_name}.rs'), 'w') as outfile:
+                    outfile.write(output_code_cleaned)
 
-                    with open(os.path.join(input_dir, f'{test_name}.rs'), 'w') as infile:
-                        infile.write(input_code_cleaned)
-                    with open(os.path.join(output_dir, f'{test_name}.rs'), 'w') as outfile:
-                        outfile.write(output_code_cleaned)
+                # Write character-based cursor information to CSV
+                csv_writer.writerow([test_name, input_cursor_1, input_cursor_2])
 
-                    # Write single cursor position to CSV
-                    csv_writer.writerow([test_name, input_cursors[0], 'N/A'])
-                else:
-                    # No cursor found
-                    csv_writer.writerow([test_name, 'N/A', 'N/A'])
 
 # Run the script
 process_tests(input_file, csv_file)
@@ -98,3 +86,20 @@ df = pd.read_csv(csv_file)
 df = df.sort_values(by='Test name')
 df.to_csv(csv_file, index=False)
 print(f"CSV file sorted alphabetically by test name.")
+
+# Go through every file in input and expected_output, and remove the first line,
+# if it begins with // (since it's a comment)
+
+affected_files = []
+
+for directory in [input_dir, output_dir]:
+    for filename in os.listdir(directory):
+        with open(os.path.join(directory, filename), 'r') as file:
+            lines = file.readlines()
+            if lines[0].startswith('//'):
+                affected_files.append(os.path.join(directory, filename))
+                with open(os.path.join(directory, filename), 'w') as file:
+                    file.writelines(lines[1:])
+print("Removed comments from the first line of each file in the input and output directories.")
+for file in affected_files:
+    print(f"\t- {file}")

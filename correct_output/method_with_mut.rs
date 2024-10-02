@@ -9,3 +9,7 @@ impl S {
         self.f += 1;
     }
 }
+
+fn main() {
+
+}

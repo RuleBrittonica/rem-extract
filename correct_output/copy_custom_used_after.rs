@@ -9,3 +9,7 @@ fn foo() {
 fn fun_name(c: Counter) {
     let n = c.0;
 }
+
+fn main() {
+
+}

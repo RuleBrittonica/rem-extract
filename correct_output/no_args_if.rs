@@ -5,3 +5,7 @@ fn foo() {
 fn fun_name() {
     if true { }
 }
+
+fn main() {
+
+}

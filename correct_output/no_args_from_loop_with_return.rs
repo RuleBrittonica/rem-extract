@@ -8,3 +8,7 @@ fn fun_name() -> i32 {
         break m;
     }
 }
+
+fn main() {
+
+}

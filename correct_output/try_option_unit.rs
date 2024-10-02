@@ -10,3 +10,7 @@ fn fun_name() -> Option<()> {
     let m = k + 1;
     Some(())
 }
+
+fn main() {
+
+}

@@ -1,3 +1,0 @@
-fn foo() {
-    if true { }
-}

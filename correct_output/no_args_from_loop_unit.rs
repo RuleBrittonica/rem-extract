@@ -7,3 +7,7 @@ fn fun_name() -> ! {
         let m = 1;
     }
 }
+
+fn main() {
+
+}

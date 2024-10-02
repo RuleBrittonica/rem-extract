@@ -28,6 +28,7 @@ use crate::{
         apply_extract_function,
         convert_to_abs_path_buf,
         filter_extract_function_assist,
+        fixup_controlflow,
         get_assists,
         get_cargo_config,
         get_cargo_toml,
@@ -65,6 +66,7 @@ impl ExtractionInput {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_absolute(
         file_path: &str,
         output_path: &str,
@@ -195,6 +197,8 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
         &callee_name,
     );
 
-    Ok(PathBuf::new())
+    fixup_controlflow( &output_abs_path )?;
+
+    Ok( PathBuf::from(output_abs_path.as_str()) )
 }
 

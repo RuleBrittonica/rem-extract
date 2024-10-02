@@ -6,3 +6,7 @@ fn foo() {
 fn fun_name(a: _) -> _ {
     a
 }
+
+fn main() {
+
+}

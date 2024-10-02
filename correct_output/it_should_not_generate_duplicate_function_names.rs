@@ -5,3 +5,7 @@ fn fun_name() {
 fn fun_name1() {
     let x = 0;
 }
+
+fn main() {
+
+}

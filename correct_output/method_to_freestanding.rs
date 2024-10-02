@@ -9,3 +9,7 @@ impl S {
 fn fun_name() -> i32 {
     1+1
 }
+
+fn main() {
+
+}

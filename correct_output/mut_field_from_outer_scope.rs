@@ -8,3 +8,7 @@ fn foo() {
 fn fun_name(c: &mut C) {
     c.n += 1;
 }
+
+fn main() {
+
+}

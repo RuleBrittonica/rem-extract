@@ -2,6 +2,7 @@ use std::fmt;
 use std::io;
 use syn::Error as SynError;
 use ra_ap_ide_assists::Assist;
+use ra_ap_vfs::AbsPathBuf;
 
 #[derive(Debug)]
 pub enum ExtractionError {
@@ -14,6 +15,7 @@ pub enum ExtractionError {
     InvalidIdxPair,
     NoAvailableAssist,
     NoExtractFunction(Vec<Assist>),
+    ControlFlowFixupFailed(AbsPathBuf),
 }
 
 impl fmt::Display for ExtractionError {
@@ -27,7 +29,8 @@ impl fmt::Display for ExtractionError {
             ExtractionError::SameIdx => write!(f, "Start and end indices are the same"),
             ExtractionError::InvalidIdxPair => write!(f, "Invalid pair of start and end indices"),
             ExtractionError::NoAvailableAssist => write!(f, "No Available Assists found for the given selection"),
-            ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists)
+            ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists),
+            ExtractionError::ControlFlowFixupFailed(path) => write!(f, "Control Flow Fixup failed for file {:?}", path),
         }
     }
 }

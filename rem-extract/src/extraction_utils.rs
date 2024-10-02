@@ -242,6 +242,11 @@ pub fn get_assists (
     // Build out the AssistConfig
     let snippet_cap_: Option<SnippetCap> = None;
     let allowed_assists: Vec<AssistKind> = vec![
+        // AssistKind::QuickFix,
+        // AssistKind::Refactor,
+        // AssistKind::RefactorInline,
+        // AssistKind::RefactorRewrite,
+        // AssistKind::Generate,
         AssistKind::RefactorExtract,
     ];
 
@@ -354,6 +359,9 @@ pub fn apply_extract_function(
         .as_ref()
         .unwrap()
         .clone();
+
+    // println!("{:?}", src_change);
+
     let in_file_id: FileId = vfs.file_id( &vfs_in_path ).unwrap();
     let (text_edit, maybe_snippet_edit) = src_change.get_source_and_snippet_edit(
         in_file_id
@@ -426,6 +434,29 @@ fn copy_file_vfs(
     let from: PathBuf = vfs_to_pathbuf( source );
     let to: PathBuf = vfs_to_pathbuf( destination );
     let _ = std::fs::copy(from, to).unwrap();
+}
+
+/// Checks if a file contains a reference to ControlFlow::, and if so, adds  use
+/// core::ops::ControlFlow;\n to the start of the file, saving it back to the input path
+/// Returns the path if successful, or ExtractionError::ControlFlowFixupFailed
+/// if it failed
+/// If no references to ControlFlow:: are found, the file is left unchanged
+pub fn fixup_controlflow(
+    output_path: &AbsPathBuf,
+) -> Result<&AbsPathBuf, ExtractionError> {
+    let path: PathBuf = PathBuf::from( output_path.to_string() );
+    let mut text: String = std::fs::read_to_string( &path ).unwrap();
+    let controlflow_ref: &str = "ControlFlow::";
+    if text.contains( controlflow_ref ) {
+        text = format!("use core::ops::ControlFlow;\n{}", text);
+        let write_result = std::fs::write( &path, text );
+        match write_result {
+            Ok(_) => Ok( output_path ),
+            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
+        }
+    } else {
+        Ok( output_path )
+    }
 }
 
 #[cfg(test)]

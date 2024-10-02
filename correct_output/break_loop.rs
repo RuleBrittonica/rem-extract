@@ -15,3 +15,7 @@ fn fun_name(n: i32) -> Option<i32> {
     let k = 2;
     Some(k)
 }
+
+fn main() {
+
+}

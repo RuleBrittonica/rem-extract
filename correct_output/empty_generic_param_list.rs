@@ -6,3 +6,7 @@ fn func<T: Debug>(t: T, i: u32) {
 fn fun_name(i: u32) {
     foo(i);
 }
+
+fn main() {
+
+}

@@ -8,3 +8,7 @@ fn fun_name() {
     foo();
     /**/
 }
+
+fn main() {
+
+}

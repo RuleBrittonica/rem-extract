@@ -8,3 +8,7 @@ fn fun_name() -> (i32, i32) {
     let Counter { n, m: k } = Counter { n: 1, m: 2 }
     (n, k)
 }
+
+fn main() {
+
+}

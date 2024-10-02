@@ -34,3 +34,7 @@ impl Trait for Struct {
         self.fun_name()
     }
 }
+
+fn main() {
+
+}

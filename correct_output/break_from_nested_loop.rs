@@ -14,3 +14,7 @@ fn fun_name() -> i32 {
     let m = k + 1;
     m
 }
+
+fn main() {
+
+}

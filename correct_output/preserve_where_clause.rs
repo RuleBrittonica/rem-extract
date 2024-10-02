@@ -5,3 +5,7 @@ fn func<T>(i: T) where T: Debug {
 fn fun_name<T>(i: T) where T: Debug {
     foo(i);
 }
+
+fn main() {
+
+}

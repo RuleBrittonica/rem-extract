@@ -5,3 +5,7 @@ fn foo() {
 fn fun_name() {
     bar(1 + 1)
 }
+
+fn main() {
+
+}

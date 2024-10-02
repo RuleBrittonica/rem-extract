@@ -302,7 +302,12 @@ pub fn test_verbose() {
     let mut min_test_time: Option<Duration> = None;
     let mut max_test_time: Option<Duration> = None;
 
+    let allowed_tests: Vec<&'static str> = vec![
+        // "break_loop_nested",
+    ];
+
     for (index, test_file) in TEST_FILES.iter().enumerate() {
+
         let test_start_time: Instant = Instant::now();
 
         total_tests += 1;
@@ -315,6 +320,13 @@ pub fn test_verbose() {
             .with_extension("rs")
             .to_string_lossy()
             .to_string();
+
+        // Skip tests not in the allowed_tests list
+        // if the allowed_tests list is not empty
+        if !allowed_tests.is_empty() && !allowed_tests.contains(&test_file.input_file) {
+            continue;
+        }
+
         // Call the extraction method and handle errors
         let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
 
