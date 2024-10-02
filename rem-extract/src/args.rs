@@ -25,20 +25,14 @@ pub enum EXTRACTCommands {
         #[arg(help = "The output path for the refactored file")]
         new_file_path: PathBuf,
 
-        #[arg(help = "The start line of the code to extract")]
-        start_line: usize,
-
-        #[arg(help = "The column of the cursor on the start line")]
-        start_column: usize,
-
-        #[arg(help = "The end line of the code to extract")]
-        end_line: usize,
-
-        #[arg(help = "The column of the cursor on the end line")]
-        end_column: usize,
-
         #[arg(help = "The name of the new function to create")]
         new_fn_name: String,
+
+        #[arg(short, long, help = "Index to the start of the function to extract")]
+        start_index: usize,
+
+        #[arg(short, long, help = "Index to the end of the function to extract")]
+        end_index: usize,
 
         #[arg(short, long, help = "Enable verbose output", action = ArgAction::SetTrue)]
         verbose: bool,

@@ -41,27 +41,24 @@ fn main() {
         EXTRACTCommands::Extract {
             file_path,
             new_file_path,
-            start_line,
-            start_column,
-            end_line,
-            end_column,
             new_fn_name,
+            start_index,
+            end_index,
             verbose,
         } => {
             info!("Running 'run' subcommand");
             info!("File Path: {:?}", file_path);
-            info!("New File Path: {:?}", new_file_path);
-            info!("Start Line: {}", start_line);
-            info!("End Line: {}", end_line);
             info!("New Function Name: {}", new_fn_name);
+            info!("Start Index: {}", start_index);
+            info!("End Index: {}", end_index);
             info!("Verbose: {}", if *verbose { "yes" } else { "no" });
 
             let input = ExtractionInput::new(
                 file_path.to_str().unwrap(),
                 new_file_path.to_str().unwrap(),
                 new_fn_name,
-                extraction::Cursor::new(*start_line, *start_column),
-                extraction::Cursor::new(*end_line, *end_column),
+                *start_index as u32,
+                *end_index as u32,
             );
 
             let _modified_code = extract_method(input);

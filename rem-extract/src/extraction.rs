@@ -1,12 +1,9 @@
-
 use std::{
-    fs,
-    io::{
+    convert, f128::consts::E, fs, io::{
         self,
         ErrorKind,
         Read,
-    },
-    path::PathBuf,
+    }, path::PathBuf
 };
 
 use ra_ap_project_model::{
@@ -41,91 +38,44 @@ use crate::{
     },
 };
 
-/// A 1-indexed struct to represent the position of a Cursor as a human user
-/// sees it.
-#[derive(Debug, PartialEq, Clone)]
-pub struct Cursor {
-    pub line: usize, // Line in file, 1-indexed
-    pub column: usize, // Column in line, 1-indexed
-}
-
-impl Cursor {
-    pub fn new(line: usize, column: usize) -> Self {
-        Cursor { line, column }
-    }
-
-    /// Cursor is 1 indexed - this method takes that into account
-    pub fn to_offset(&self, file_path: &AbsPathBuf) -> Result<u32, ExtractionError> {
-        let mut file = fs::File::open(file_path)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
-        let lines: Vec<&str> = content.lines().collect();
-
-        let line_idx = self.line - 1;
-        if line_idx >= lines.len() {
-            return Err(ExtractionError::InvalidLineRange);
-        }
-
-        let mut offset: u32 = 0;
-        for i in 0..line_idx {
-            offset += lines[i].len() as u32 + 1; // Adding 1 for the newline character
-        }
-
-        let cursor_line = lines[line_idx];
-
-        let column_idx = self.column - 1;
-        if column_idx > cursor_line.len() {
-            println!("{} > {}", self.column, cursor_line.len());
-            return Err(ExtractionError::InvalidColumnRange);
-        }
-        // Add the byte length of characters on the cursor's line up to the column
-        offset += cursor_line[..column_idx].len() as u32;
-
-        Ok(offset)
-    }
-}
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct ExtractionInput {
     pub file_path: String,
     pub output_path: String,
     pub new_fn_name: String,
-    pub start_cursor: Cursor,
-    pub end_cursor: Cursor,
+    pub start_idx: u32,
+    pub end_idx: u32,
 }
+
 
 impl ExtractionInput {
     pub fn new(
         file_path: &str,
         output_path: &str,
         new_fn_name: &str,
-        start_cursor: Cursor,
-        end_cursor: Cursor,
-    ) -> ExtractionInput {
-        ExtractionInput {
+        start_idx: u32,
+        end_idx: u32,
+    ) -> Self { ExtractionInput {
             file_path: file_path.to_string(),
             output_path: output_path.to_string(),
             new_fn_name: new_fn_name.to_string(),
-            start_cursor,
-            end_cursor,
+            start_idx,
+            end_idx,
         }
     }
 
-    pub fn new_raw(
+    pub fn new_absolute(
         file_path: &str,
         output_path: &str,
         new_fn_name: &str,
-        start_cursor: usize,
-        start_column: usize,
-        end_cursor: usize,
-        end_column: usize,
-    ) -> ExtractionInput {
-        ExtractionInput {
-            file_path: file_path.to_string(),
-            output_path: output_path.to_string(),
+        start_idx: u32,
+        end_idx: u32,
+    ) -> Self { ExtractionInput {
+            file_path: convert_to_abs_path_buf(file_path).unwrap().as_str().to_string(),
+            output_path: convert_to_abs_path_buf(output_path).unwrap().as_str().to_string(),
             new_fn_name: new_fn_name.to_string(),
-            start_cursor: Cursor::new(start_cursor, start_column),
-            end_cursor: Cursor::new(end_cursor, end_column),
+            start_idx,
+            end_idx,
         }
     }
 }
@@ -145,42 +95,29 @@ fn check_file_exists(file_path: &str) -> Result<(), ExtractionError> {
     Ok(())
 }
 
-fn check_line_numbers(input: &ExtractionInput) -> Result<(), ExtractionError> {
-    // Since the cursor is 1-indexed, we need to check if the line number is 0
-    if input.start_cursor.line == 0 {
-        return Err(ExtractionError::ZeroLineIndex);
+// Ensure that the input and output files are not the same
+fn input_output_not_same(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    if input.file_path == input.output_path {
+        return Err(ExtractionError::Io(io::Error::new(
+            ErrorKind::InvalidInput,
+            "Input and output files cannot be the same",
+        )));
     }
-    // Same for the end cursor
-    if input.end_cursor.line == 0 {
-        return Err(ExtractionError::ZeroLineIndex);
-    }
-
-    if input.start_cursor.line > input.end_cursor.line {
-        return Err(ExtractionError::InvalidLineRange);
-    }
-
-    let source_code: String = fs::read_to_string(&input.file_path)?;
-    let num_lines = source_code.lines().count();
-    if input.end_cursor.line >= num_lines {
-        return Err(ExtractionError::InvalidLineRange);
-    }
-
     Ok(())
 }
 
-fn check_columns(input: &ExtractionInput) -> Result<(), ExtractionError> {
-    if input.start_cursor.line == input.end_cursor.line
-        && input.start_cursor.column > input.end_cursor.column
-    {
-        return Err(ExtractionError::InvalidColumnRange);
+// Check if the idx pair is valid
+fn check_idx(input: &ExtractionInput) -> Result<(), ExtractionError> {
+    if input.start_idx == input.end_idx {
+        return Err(ExtractionError::SameIdx);
+    } else if input.start_idx > input.end_idx {
+        return Err(ExtractionError::InvalidIdxPair);
     }
-
-    Ok(())
-}
-
-fn check_cursor_not_equal(input: &ExtractionInput) -> Result<(), ExtractionError> {
-    if input.start_cursor == input.end_cursor {
-        return Err(ExtractionError::SameCursor);
+    if input.start_idx == 0 {
+        return Err(ExtractionError::InvalidStartIdx);
+    }
+    if input.end_idx == 0 {
+        return Err(ExtractionError::InvalidEndIdx);
     }
     Ok(())
 }
@@ -188,9 +125,8 @@ fn check_cursor_not_equal(input: &ExtractionInput) -> Result<(), ExtractionError
 fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
     // Execute each input validation step one by one
     check_file_exists(&input.file_path)?;
-    check_line_numbers(input)?;
-    check_columns(input)?;
-    check_cursor_not_equal(input)?;
+    input_output_not_same(&input)?;
+    check_idx(input)?;
 
     Ok(())
 }
@@ -202,14 +138,13 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 /// Function to extract the code segment based on cursor positions
 /// If successful, returns the `PathBuf` to the output file
 pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError> {
-    // Get the cursor positions
-    let start_cursor: Cursor = input.clone().start_cursor;
-    let end_cursor: Cursor = input.clone().end_cursor;
 
-    // Get info about the files
+    // Extract the struct information
     let input_path: &str = &input.file_path;
     let output_path: &str = &input.output_path;
     let callee_name: &str = &input.new_fn_name;
+    let start_idx: u32 = input.start_idx;
+    let end_idx: u32 = input.end_idx;
 
     // Convert the input and output path to an `AbsPathBuf`
     let input_abs_path: AbsPathBuf = convert_to_abs_path_buf(input_path).unwrap();
@@ -244,12 +179,11 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
 
     // Parse the cursor positions into the range
     let range: (u32, u32) = (
-        start_cursor.to_offset(&input_abs_path)?,
-        end_cursor.to_offset(&input_abs_path)?
+        start_idx,
+        end_idx,
     );
 
     let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
-
     let assist: Assist = filter_extract_function_assist(assists)?;
 
     apply_extract_function(
