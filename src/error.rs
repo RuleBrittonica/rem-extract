@@ -7,16 +7,10 @@ pub enum ExtractionError {
     Io(io::Error),
     Parse(SynError),
     InvalidManifest,
-    FormatError,
     InvalidLineRange,
     InvalidColumnRange,
-    InvalidCursor,
     ZeroLineIndex,
     SameCursor,
-    AssistContextFailed,
-    FunctionInBraces,
-    Comment,
-    Undefined,
 }
 
 impl fmt::Display for ExtractionError {
@@ -25,16 +19,10 @@ impl fmt::Display for ExtractionError {
             ExtractionError::Io(e) => write!(f, "I/O error: {}", e),
             ExtractionError::Parse(e) => write!(f, "Parse error: {}", e),
             ExtractionError::InvalidManifest => write!(f, "Could not find a manifest file for the given path"),
-            ExtractionError::FormatError => write!(f, "Formatting error"),
             ExtractionError::InvalidLineRange => write!(f, "Invalid line range"),
             ExtractionError::InvalidColumnRange => write!(f, "Invalid column range"),
-            ExtractionError::InvalidCursor => write!(f, "Invalid cursor"),
             ExtractionError::ZeroLineIndex => write!(f, "Line index must be greater than 0. Cursor is 1-indexed."),
             ExtractionError::SameCursor => write!(f, "Start and end cursors are the same"),
-            ExtractionError::AssistContextFailed => write!(f, "Failed to get assist context"),
-            ExtractionError::FunctionInBraces => write!(f, "Function must not be in braces"),
-            ExtractionError::Comment => write!(f, "Cannot Extract Comment"),
-            ExtractionError::Undefined => write!(f, "Undefined error"),
         }
     }
 }

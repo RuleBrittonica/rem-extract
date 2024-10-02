@@ -1,0 +1,16 @@
+2024-10-02 17:12:48 [INFO] - Application Started
+2024-10-02 17:12:48 [INFO] - Running 'test' subcommand
+2024-10-02 17:12:48 [INFO] - Verbose: no
+2024-10-02 17:12:48 [INFO] - Starting tests...
+2024-10-02 17:12:48 [INFO] - Test 1 | FAILED: Invalid column range | N/A: no_args_from_binary_expr in 391.45ms
+2024-10-02 17:12:49 [INFO] - Test 2 | FAILED: Invalid column range | N/A: no_args_from_binary_expr_in_module in 377.91ms
+2024-10-02 17:12:49 [INFO] - Test 3 | FAILED: Invalid column range | N/A: no_args_from_binary_expr_indented in 383.13ms
+2024-10-02 17:12:50 [INFO] - Test 4 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_with_last_expr in 380.90ms
+2024-10-02 17:12:50 [INFO] - Test 5 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_unit in 363.35ms
+2024-10-02 17:12:50 [INFO] - Test 6 | FAILED: Invalid column range | N/A: no_args_if in 359.57ms
+2024-10-02 17:12:51 [INFO] - Test 7 | FAILED: Invalid column range | N/A: no_args_if_else in 369.37ms
+2024-10-02 17:12:51 [INFO] - Test 8 | FAILED: Invalid column range | N/A: no_args_if_let_else in 358.52ms
+2024-10-02 17:12:51 [INFO] - Test 9 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_match in 360.57ms
+2024-10-02 17:12:52 [INFO] - Test 10 | FAILED: Invalid column range | N/A: no_args_while in 361.19ms
+2024-10-02 17:12:52 [INFO] - Test 11 | FAILED: Invalid column range | N/A: no_args_for in 358.92ms
+2024-10-02 17:12:52 [INFO] - Test 12 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_loop_unit in 356.59ms

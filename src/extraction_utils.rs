@@ -1,15 +1,12 @@
 //! Utility functions for the rem-extract crate.
 //! At some point these will be merged into rem-utils.
 
-use crate::{
-    extraction::Cursor,
-    error::ExtractionError,
-};
+use crate::error::ExtractionError;
 
 use std::{
-    fs,
-    path::{Path, PathBuf},
     env,
+    fs,
+    path::PathBuf,
 };
 
 use camino::Utf8PathBuf;
@@ -24,7 +21,6 @@ use ra_ap_ide::{
     Analysis,
     AnalysisHost,
     DiagnosticsConfig,
-    FilePosition,
     FileRange,
     RootDatabase,
     SingleResolve,
@@ -40,7 +36,8 @@ use ra_ap_ide_db::{
         ImportGranularity,
         InsertUseConfig,
         PrefixKind,
-    }, rename, SnippetCap
+    },
+    SnippetCap
 };
 
 use ra_ap_ide_assists::{
@@ -64,11 +61,6 @@ use ra_ap_load_cargo::{
 };
 
 
-
-// TODO
-pub fn cursor_to_offset( file_path: &AbsPathBuf, cursor: &Cursor ) -> u32 {
-   0 as u32
-}
 
 /// Returns the path to the manifest directory of the given file
 /// The manifest directory is the directory containing the Cargo.toml file
@@ -347,7 +339,7 @@ pub fn apply_extract_function(
     );
 
     let vfs_out_path: VfsPath = VfsPath::new_real_path(
-        input_path
+        output_path
             .as_str()
             .to_string(),
     );

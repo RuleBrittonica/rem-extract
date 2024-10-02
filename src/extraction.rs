@@ -1,7 +1,12 @@
-use rem_utils::fmt_file;
 
 use std::{
-    convert, fs, io::{self, ErrorKind}, path::PathBuf
+    fs,
+    io::{
+        self,
+        ErrorKind,
+        Read,
+    },
+    path::PathBuf,
 };
 
 use ra_ap_project_model::{
@@ -13,53 +18,31 @@ use ra_ap_project_model::{
 use ra_ap_ide::{
     Analysis,
     AnalysisHost,
-    DiagnosticsConfig,
-    FilePosition,
-    FileRange,
-    RootDatabase,
-    SingleResolve,
-    TextRange,
-    TextSize,
-    TextEdit,
-    SnippetEdit,
-    SourceChange,
 };
 
-use ra_ap_ide_db::{
-    imports::insert_use::{
-        ImportGranularity,
-        InsertUseConfig,
-        PrefixKind,
-    }, rename, SnippetCap
-};
+use ra_ap_ide_assists::Assist;
 
-use ra_ap_ide_assists::{
-    Assist,
-    AssistConfig,
-    AssistKind,
-    AssistResolveStrategy,
-};
-
-use ra_ap_vfs::{
-    AbsPathBuf,
-    VfsPath,
-    Vfs,
-    FileId,
-};
-
-use ra_ap_load_cargo::{
-    LoadCargoConfig,
-    ProcMacroServerChoice,
-    load_workspace,
-};
+use ra_ap_vfs::AbsPathBuf;
 
 use crate::{
     error::ExtractionError,
     extraction_utils::{
-        apply_extract_function, convert_to_abs_path_buf, cursor_to_offset, filter_extract_function_assist, get_assists, get_cargo_config, get_cargo_toml, get_manifest_dir, load_project_manifest, load_project_workspace, load_workspace_data, run_analysis
+        apply_extract_function,
+        convert_to_abs_path_buf,
+        filter_extract_function_assist,
+        get_assists,
+        get_cargo_config,
+        get_cargo_toml,
+        get_manifest_dir,
+        load_project_manifest,
+        load_project_workspace,
+        load_workspace_data,
+        run_analysis,
     },
 };
 
+/// A 1-indexed struct to represent the position of a Cursor as a human user
+/// sees it.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Cursor {
     pub line: usize, // Line in file, 1-indexed
@@ -67,8 +50,39 @@ pub struct Cursor {
 }
 
 impl Cursor {
-    pub fn new(line: usize, column: usize) -> Cursor {
+    pub fn new(line: usize, column: usize) -> Self {
         Cursor { line, column }
+    }
+
+    /// Cursor is 1 indexed - this method takes that into account
+    pub fn to_offset(&self, file_path: &AbsPathBuf) -> Result<u32, ExtractionError> {
+        let mut file = fs::File::open(file_path)?;
+        let mut content = String::new();
+        file.read_to_string(&mut content)?;
+
+        let lines: Vec<&str> = content.lines().collect();
+
+        let line_idx = self.line - 1;
+        if line_idx >= lines.len() {
+            return Err(ExtractionError::InvalidLineRange);
+        }
+
+        let mut offset: u32 = 0;
+        for i in 0..line_idx {
+            offset += lines[i].len() as u32 + 1; // Adding 1 for the newline character
+        }
+
+        let cursor_line = lines[line_idx];
+
+        let column_idx = self.column - 1;
+        if column_idx > cursor_line.len() {
+            println!("{} > {}", self.column, cursor_line.len());
+            return Err(ExtractionError::InvalidColumnRange);
+        }
+        // Add the byte length of characters on the cursor's line up to the column
+        offset += cursor_line[..column_idx].len() as u32;
+
+        Ok(offset)
     }
 }
 
@@ -159,6 +173,8 @@ fn check_columns(input: &ExtractionInput) -> Result<(), ExtractionError> {
     if input.start_cursor.line == input.end_cursor.line
         && input.start_cursor.column > input.end_cursor.column
     {
+        println!("Start Cursor: {:?}", input.start_cursor);
+        println!("End Cursor {:?}", input.end_cursor);
         return Err(ExtractionError::InvalidColumnRange);
     }
 
@@ -235,8 +251,8 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
 
     // Parse the cursor positions into the range
     let range: (u32, u32) = (
-        cursor_to_offset(&input_abs_path, &start_cursor),
-        cursor_to_offset(&input_abs_path, &end_cursor)
+        start_cursor.to_offset(&input_abs_path)?,
+        end_cursor.to_offset(&output_abs_path)?
     );
 
     let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
