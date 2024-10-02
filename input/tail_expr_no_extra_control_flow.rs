@@ -1,0 +1,7 @@
+//- minicore: result
+fn fallible() -> Result<(), ()> {
+    if true {
+        return Err(());
+    }
+    Ok(())
+}

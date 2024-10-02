@@ -8,4 +8,4 @@ mkdir -p ./input
 mkdir -p ./output
 mkdir -p ./correct_output
 
-python3 ./scripts/fixup_cargotoml.py
+python ./scripts/fixup_cargotoml.py

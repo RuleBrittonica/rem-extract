@@ -18,44 +18,56 @@ use crate::{
     extraction::ExtractionInput,
     error::ExtractionError,
     test_details::TEST_FILES, // Import Test Files Information from test_details.rs
-    extraction::Cursor,
 };
 
 pub struct TestFile<'a> {
-    pub input_file: &'a str, // Just the name of the file. It is assumed the file is in ./input, and there is a corresponding file in ./correct_output
-    pub start_cursor: Cursor,
-    pub end_cursor: Cursor,
+    pub input_file: &'a str, // Just the name of the file. It is assumed the file is in ./input/{testname}/src/main.rs, and there is a corresponding file in ./correct_output (./correct_output/{testname}.rs)
+    pub start_idx: u32,
+    pub end_idx: u32,
 }
 
 impl TestFile<'_> {
-    pub fn new(input_file: &str, start_cursor: Cursor, end_cursor: Cursor) -> TestFile {
+    pub fn new(input_file: &str, start_idx: u32, end_idx: u32) -> TestFile {
         TestFile {
             input_file,
-            start_cursor,
-            end_cursor,
+            start_idx,
+            end_idx,
         }
     }
 }
 
 // Helper function to convert a TestFile into an ExtractionInput
-impl From<TestFile<'_>> for ExtractionInput {
-    fn from(test_file: TestFile) -> ExtractionInput {
+impl From<&TestFile<'_>> for ExtractionInput {
+    fn from(test_file: &TestFile<'_>) -> ExtractionInput {
+        let file_path: String = PathBuf::from("input")
+            .join(&test_file.input_file)
+            .join("src")
+            .join("main.rs")
+            .to_string_lossy()
+            .to_string();
+
+        let output_path: String = PathBuf::from("output")
+            .join(&test_file.input_file)
+            .to_string_lossy()
+            .to_string();
+
         ExtractionInput {
-            file_path: format!("./input/{}", test_file.input_file),
-            output_path: format!("./output/{}", test_file.input_file),
+            file_path,
+            output_path,
             new_fn_name: "fun_name".to_string(),
-            start_cursor: test_file.start_cursor,
-            end_cursor: test_file.end_cursor,
+            start_idx: test_file.start_idx,
+            end_idx: test_file.end_idx,
         }
     }
 }
-
 // Helper function to strip ANSI escape codes
+#[allow(dead_code)]
 fn strip_ansi_codes(s: &str) -> String {
     let ansi_regex = Regex::new(r"\x1b\[([0-9]{1,2}(;[0-9]{0,2})*)m").unwrap();
     ansi_regex.replace_all(s, "").to_string()
 }
 
+#[allow(dead_code)]
 fn parse_and_compare_ast(output_file_path: &str, expected_file_path: &str) -> Result<bool, ExtractionError> {
     let output_content: String = fs::read_to_string(output_file_path)?;
     let expected_content: String = fs::read_to_string(expected_file_path)?;
@@ -71,6 +83,7 @@ fn parse_and_compare_ast(output_file_path: &str, expected_file_path: &str) -> Re
 }
 
 // Helper function to show differences between two files
+#[allow(dead_code)]
 fn print_file_diff(expected_file_path: &str, output_file_path: &str) -> Result<(), std::io::Error> {
     let expected_content = fs::read_to_string(expected_file_path)?;
     let output_content = fs::read_to_string(output_file_path)?;
@@ -92,6 +105,7 @@ fn print_file_diff(expected_file_path: &str, output_file_path: &str) -> Result<(
 }
 
 /// Removes all files in a given directory
+#[allow(dead_code)]
 fn remove_all_files(dir: &PathBuf) -> () {
     for entry in fs::read_dir(dir).unwrap() {
         let entry = entry.unwrap();
@@ -102,6 +116,7 @@ fn remove_all_files(dir: &PathBuf) -> () {
     }
 }
 
+#[allow(dead_code)]
 pub fn test() {
     // Clear the output directory before running tests
     let output_dir = PathBuf::from("./output");
@@ -126,21 +141,14 @@ pub fn test() {
 
         total_tests += 1;
 
-        let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
-        println!("Extraction Test File: {}", input_file_path);
-
-        let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
-        let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
-
-        let input: ExtractionInput = ExtractionInput::new_raw(
-            &input_file_path,
-            &output_file_path,
-            "fun_name",
-            test_file.start_cursor.line,
-            test_file.start_cursor.column,
-            test_file.end_cursor.line,
-            test_file.end_cursor.column,
-        );
+        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let expected_file_path: String = PathBuf::new()
+            .join("correct_output")
+            .join(&test_file.input_file)
+            .with_extension("rs")
+            .to_string_lossy()
+            .to_string();
+        let output_path: String = input.output_path.clone();
 
         // Call the extraction method and handle errors
         let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
@@ -182,7 +190,7 @@ pub fn test() {
             passed_stage_1 += 1;
 
             // Compare the output file with the expected file's AST
-            match parse_and_compare_ast(&output_file_path, &expected_file_path) {
+            match parse_and_compare_ast(&output_path, &expected_file_path) {
                 Ok(is_identical) => {
                     if is_identical {
                         comparison_status = "PASSED".green().to_string();
@@ -274,6 +282,7 @@ pub fn test() {
     }
 }
 
+#[allow(dead_code)]
 pub fn test_verbose() {
     // Clear the output directory before running tests
     let output_dir = PathBuf::from("./output");
@@ -298,21 +307,14 @@ pub fn test_verbose() {
 
         total_tests += 1;
 
-        let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
-        println!("Extraction Test File: {}", input_file_path);
-        let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
-        let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
-
-        let input: ExtractionInput = ExtractionInput::new_raw(
-            &input_file_path,
-            &output_file_path,
-            "fun_name",
-            test_file.start_cursor.line,
-            test_file.start_cursor.column,
-            test_file.end_cursor.line,
-            test_file.end_cursor.column,
-        );
-
+        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let output_path: String = input.output_path.clone();
+        let expected_file_path: String = PathBuf::new()
+            .join("correct_output")
+            .join(&test_file.input_file)
+            .with_extension("rs")
+            .to_string_lossy()
+            .to_string();
         // Call the extraction method and handle errors
         let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
 
@@ -353,7 +355,7 @@ pub fn test_verbose() {
             passed_stage_1 += 1;
 
             // Compare the output file with the expected file's AST
-            match parse_and_compare_ast(&output_file_path, &expected_file_path) {
+            match parse_and_compare_ast(&output_path, &expected_file_path) {
                 Ok(is_identical) => {
                     if is_identical {
                         comparison_status = "PASSED".green().to_string();
@@ -384,7 +386,7 @@ pub fn test_verbose() {
         if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" {
             println!("==================================================================");
             println!("Differences found for test '{}':", test_name);
-            print_file_diff(&expected_file_path, &output_file_path).unwrap();
+            print_file_diff(&expected_file_path, &output_path).unwrap();
             println!("==================================================================");
             println!("");
         }

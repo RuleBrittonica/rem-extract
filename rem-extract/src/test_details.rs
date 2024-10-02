@@ -1,577 +1,576 @@
 use lazy_static::lazy_static;
 use crate::extract_tests::TestFile;
-use crate::extraction::Cursor;
 lazy_static! {
     pub static ref TEST_FILES: Vec<TestFile<'static>> = vec![
         TestFile::new(
-            "no_args_from_binary_expr",
-            Cursor::new(2, 9),
-            Cursor::new(2, 14),
-        ),
-        TestFile::new(
-            "no_args_from_binary_expr_in_module",
-            Cursor::new(3, 13),
-            Cursor::new(3, 18),
-        ),
-        TestFile::new(
-            "no_args_from_binary_expr_indented",
-            Cursor::new(2, 5),
-            Cursor::new(2, 14),
-        ),
-        TestFile::new(
-            "no_args_from_stmt_with_last_expr",
-            Cursor::new(3, 5),
-            Cursor::new(4, 10),
-        ),
-        TestFile::new(
-            "no_args_from_stmt_unit",
-            Cursor::new(3, 5),
-            Cursor::new(4, 19),
-        ),
-        TestFile::new(
-            "no_args_if",
-            Cursor::new(2, 5),
-            Cursor::new(2, 16),
-        ),
-        TestFile::new(
-            "no_args_if_else",
-            Cursor::new(2, 5),
-            Cursor::new(2, 29),
-        ),
-        TestFile::new(
-            "no_args_if_let_else",
-            Cursor::new(2, 5),
-            Cursor::new(2, 41),
-        ),
-        TestFile::new(
-            "no_args_match",
-            Cursor::new(2, 5),
-            Cursor::new(5, 6),
-        ),
-        TestFile::new(
-            "no_args_while",
-            Cursor::new(2, 5),
-            Cursor::new(2, 19),
-        ),
-        TestFile::new(
-            "no_args_for",
-            Cursor::new(2, 5),
-            Cursor::new(2, 25),
-        ),
-        TestFile::new(
-            "no_args_from_loop_unit",
-            Cursor::new(2, 5),
-            Cursor::new(4, 6),
-        ),
-        TestFile::new(
-            "no_args_from_loop_with_return",
-            Cursor::new(2, 13),
-            Cursor::new(5, 6),
-        ),
-        TestFile::new(
-            "no_args_from_match",
-            Cursor::new(2, 18),
-            Cursor::new(5, 6),
-        ),
-        TestFile::new(
-            "extract_partial_block_single_line",
-            Cursor::new(3, 17),
-            Cursor::new(3, 23),
-        ),
-        TestFile::new(
-            "extract_partial_block",
-            Cursor::new(4, 19),
-            Cursor::new(5, 19),
+            "argument_and_locals",
+            36,
+            58,
         ),
         TestFile::new(
             "argument_form_expr",
-            Cursor::new(3, 5),
-            Cursor::new(3, 8),
+            36,
+            41,
         ),
         TestFile::new(
             "argument_used_twice_form_expr",
-            Cursor::new(3, 5),
-            Cursor::new(3, 8),
-        ),
-        TestFile::new(
-            "two_arguments_form_expr",
-            Cursor::new(4, 5),
-            Cursor::new(4, 10),
-        ),
-        TestFile::new(
-            "argument_and_locals",
-            Cursor::new(3, 5),
-            Cursor::new(4, 10),
-        ),
-        TestFile::new(
-            "part_of_expr_stmt",
-            Cursor::new(2, 5),
-            Cursor::new(2, 6),
-        ),
-        TestFile::new(
-            "function_expr",
-            Cursor::new(2, 5),
-            Cursor::new(2, 15),
-        ),
-        TestFile::new(
-            "extract_from_nested",
-            Cursor::new(4, 18),
-            Cursor::new(4, 23),
-        ),
-        TestFile::new(
-            "param_from_closure",
-            Cursor::new(2, 27),
-            Cursor::new(2, 32),
-        ),
-        TestFile::new(
-            "extract_return_stmt",
-            Cursor::new(2, 5),
-            Cursor::new(2, 17),
-        ),
-        TestFile::new(
-            "does_not_add_extra_whitespace",
-            Cursor::new(4, 5),
-            Cursor::new(4, 17),
-        ),
-        TestFile::new(
-            "break_stmt",
-            Cursor::new(3, 9),
-            Cursor::new(3, 20),
-        ),
-        TestFile::new(
-            "extract_cast",
-            Cursor::new(2, 13),
-            Cursor::new(2, 24),
-        ),
-        TestFile::new(
-            "method_to_freestanding",
-            Cursor::new(5, 9),
-            Cursor::new(5, 12),
-        ),
-        TestFile::new(
-            "method_with_reference",
-            Cursor::new(5, 9),
-            Cursor::new(5, 22),
-        ),
-        TestFile::new(
-            "method_with_mut",
-            Cursor::new(5, 9),
-            Cursor::new(5, 21),
-        ),
-        TestFile::new(
-            "variable_defined_inside_and_used_after_no_ret",
-            Cursor::new(3, 5),
-            Cursor::new(3, 19),
-        ),
-        TestFile::new(
-            "variable_defined_inside_and_used_after_mutably_no_ret",
-            Cursor::new(3, 5),
-            Cursor::new(3, 23),
-        ),
-        TestFile::new(
-            "two_variables_defined_inside_and_used_after_no_ret",
-            Cursor::new(3, 5),
-            Cursor::new(4, 19),
-        ),
-        TestFile::new(
-            "multi_variables_defined_inside_and_used_after_mutably_no_ret",
-            Cursor::new(3, 5),
-            Cursor::new(6, 12),
-        ),
-        TestFile::new(
-            "nontrivial_patterns_define_variables",
-            Cursor::new(3, 5),
-            Cursor::new(3, 33),
-        ),
-        TestFile::new(
-            "struct_with_two_fields_pattern_define_variables",
-            Cursor::new(3, 5),
-            Cursor::new(3, 54),
-        ),
-        TestFile::new(
-            "mut_var_from_outer_scope",
-            Cursor::new(3, 5),
-            Cursor::new(3, 12),
-        ),
-        TestFile::new(
-            "mut_field_from_outer_scope",
-            Cursor::new(4, 5),
-            Cursor::new(4, 14),
-        ),
-        TestFile::new(
-            "mut_nested_field_from_outer_scope",
-            Cursor::new(7, 5),
-            Cursor::new(8, 24),
-        ),
-        TestFile::new(
-            "mut_param_many_usages_stmt",
-            Cursor::new(11, 5),
-            Cursor::new(19, 14),
-        ),
-        TestFile::new(
-            "mut_param_many_usages_expr",
-            Cursor::new(11, 5),
-            Cursor::new(21, 6),
-        ),
-        TestFile::new(
-            "mut_param_because_of_mut_ref",
-            Cursor::new(3, 5),
-            Cursor::new(4, 13),
-        ),
-        TestFile::new(
-            "mut_method_call",
-            Cursor::new(9, 5),
-            Cursor::new(9, 13),
-        ),
-        TestFile::new(
-            "copy_used_after",
-            Cursor::new(4, 5),
-            Cursor::new(4, 15),
-        ),
-        TestFile::new(
-            "copy_custom_used_after",
-            Cursor::new(6, 5),
-            Cursor::new(6, 17),
-        ),
-        TestFile::new(
-            "indented_stmts",
-            Cursor::new(4, 13),
-            Cursor::new(5, 23),
-        ),
-        TestFile::new(
-            "indented_stmts_inside_mod",
-            Cursor::new(5, 17),
-            Cursor::new(6, 27),
-        ),
-        TestFile::new(
-            "break_loop",
-            Cursor::new(5, 9),
-            Cursor::new(7, 19),
-        ),
-        TestFile::new(
-            "return_to_parent",
-            Cursor::new(4, 5),
-            Cursor::new(6, 15),
-        ),
-        TestFile::new(
-            "break_loop_with_if",
-            Cursor::new(5, 9),
-            Cursor::new(7, 16),
-        ),
-        TestFile::new(
-            "break_loop_nested",
-            Cursor::new(5, 9),
-            Cursor::new(8, 10),
-        ),
-        TestFile::new(
-            "break_loop_nested_labeled",
-            Cursor::new(5, 13),
-            Cursor::new(5, 24),
-        ),
-        TestFile::new(
-            "continue_loop_nested_labeled",
-            Cursor::new(5, 13),
-            Cursor::new(5, 27),
-        ),
-        TestFile::new(
-            "return_from_nested_loop",
-            Cursor::new(3, 19),
-            Cursor::new(8, 23),
-        ),
-        TestFile::new(
-            "break_from_nested_loop",
-            Cursor::new(4, 9),
-            Cursor::new(8, 23),
+            36,
+            41,
         ),
         TestFile::new(
             "break_from_nested_and_outer_loops",
-            Cursor::new(4, 9),
-            Cursor::new(11, 23),
+            48,
+            177,
         ),
         TestFile::new(
-            "return_from_nested_fn",
-            Cursor::new(4, 9),
-            Cursor::new(8, 23),
+            "break_from_nested_loop",
+            48,
+            127,
+        ),
+        TestFile::new(
+            "break_loop",
+            69,
+            119,
+        ),
+        TestFile::new(
+            "break_loop_nested",
+            70,
+            136,
+        ),
+        TestFile::new(
+            "break_loop_nested_labeled",
+            72,
+            85,
+        ),
+        TestFile::new(
+            "break_loop_with_if",
+            70,
+            117,
+        ),
+        TestFile::new(
+            "break_stmt",
+            43,
+            56,
         ),
         TestFile::new(
             "break_with_value",
-            Cursor::new(4, 9),
-            Cursor::new(8, 23),
+            55,
+            142,
         ),
         TestFile::new(
             "break_with_value_and_label",
-            Cursor::new(4, 9),
-            Cursor::new(8, 23),
+            61,
+            153,
         ),
         TestFile::new(
             "break_with_value_and_return",
-            Cursor::new(3, 19),
-            Cursor::new(8, 23),
-        ),
-        TestFile::new(
-            "try_option",
-            Cursor::new(5, 5),
-            Cursor::new(6, 19),
-        ),
-        TestFile::new(
-            "try_option_unit",
-            Cursor::new(4, 5),
-            Cursor::new(5, 19),
-        ),
-        TestFile::new(
-            "try_result",
-            Cursor::new(4, 5),
-            Cursor::new(5, 19),
-        ),
-        TestFile::new(
-            "try_option_with_return",
-            Cursor::new(4, 5),
-            Cursor::new(8, 19),
-        ),
-        TestFile::new(
-            "try_result_with_return",
-            Cursor::new(4, 5),
-            Cursor::new(8, 19),
-        ),
-        TestFile::new(
-            "try_and_return_ok",
-            Cursor::new(4, 5),
-            Cursor::new(8, 19),
-        ),
-        TestFile::new(
-            "param_usage_in_macro",
-            Cursor::new(7, 5),
-            Cursor::new(7, 23),
-        ),
-        TestFile::new(
-            "param_usage_in_macro_with_nested_tt",
-            Cursor::new(8, 5),
-            Cursor::new(8, 33),
-        ),
-        TestFile::new(
-            "param_usage_in_macro_with_nested_tt_2",
-            Cursor::new(9, 9),
-            Cursor::new(9, 42),
-        ),
-        TestFile::new(
-            "extract_with_await",
-            Cursor::new(3, 5),
-            Cursor::new(3, 27),
-        ),
-        TestFile::new(
-            "extract_with_await_and_result_not_producing_match_expr",
-            Cursor::new(3, 5),
-            Cursor::new(4, 13),
-        ),
-        TestFile::new(
-            "extract_with_await_and_result_producing_match_expr",
-            Cursor::new(4, 19),
-            Cursor::new(9, 23),
-        ),
-        TestFile::new(
-            "extract_with_await_in_args",
-            Cursor::new(3, 5),
-            Cursor::new(3, 47),
-        ),
-        TestFile::new(
-            "extract_does_not_tear_comments_apart",
-            Cursor::new(2, 7),
-            Cursor::new(5, 7),
-        ),
-        TestFile::new(
-            "extract_does_not_tear_body_apart",
-            Cursor::new(2, 5),
-            Cursor::new(3, 2),
-        ),
-        TestFile::new(
-            "extract_does_not_wrap_res_in_res",
-            Cursor::new(3, 5),
-            Cursor::new(4, 11),
-        ),
-        TestFile::new(
-            "extract_mut_ref_param_has_no_mut_binding_in_loop",
-            Cursor::new(9, 9),
-            Cursor::new(9, 17),
-        ),
-        TestFile::new(
-            "extract_with_macro_arg",
-            Cursor::new(6, 5),
-            Cursor::new(6, 13),
-        ),
-        TestFile::new(
-            "unresolveable_types_default_to_placeholder",
-            Cursor::new(3, 13),
-            Cursor::new(3, 16),
-        ),
-        TestFile::new(
-            "reference_mutable_param_with_further_usages",
-            Cursor::new(6, 5),
-            Cursor::new(6, 19),
-        ),
-        TestFile::new(
-            "reference_mutable_param_without_further_usages",
-            Cursor::new(6, 5),
-            Cursor::new(6, 19),
-        ),
-        TestFile::new(
-            "does_not_import_control_flow",
-            Cursor::new(3, 5),
-            Cursor::new(3, 32),
-        ),
-        TestFile::new(
-            "extract_function_copies_comment_at_start",
-            Cursor::new(3, 5),
-            Cursor::new(4, 15),
-        ),
-        TestFile::new(
-            "extract_function_copies_comment_in_between",
-            Cursor::new(2, 15),
-            Cursor::new(5, 15),
-        ),
-        TestFile::new(
-            "extract_function_copies_comment_at_end",
-            Cursor::new(3, 5),
-            Cursor::new(4, 21),
-        ),
-        TestFile::new(
-            "extract_function_copies_comment_indented",
-            Cursor::new(3, 5),
-            Cursor::new(6, 6),
-        ),
-        TestFile::new(
-            "extract_function_does_preserve_whitespace",
-            Cursor::new(3, 5),
-            Cursor::new(5, 15),
-        ),
-        TestFile::new(
-            "extract_function_long_form_comment",
-            Cursor::new(3, 5),
-            Cursor::new(4, 15),
-        ),
-        TestFile::new(
-            "it_should_not_generate_duplicate_function_names",
-            Cursor::new(2, 5),
-            Cursor::new(2, 15),
-        ),
-        TestFile::new(
-            "should_increment_suffix_until_it_finds_space",
-            Cursor::new(6, 5),
-            Cursor::new(6, 15),
-        ),
-        TestFile::new(
-            "extract_method_from_trait_impl",
-            Cursor::new(8, 9),
-            Cursor::new(8, 19),
-        ),
-        TestFile::new(
-            "extract_method_from_trait_with_existing_non_empty_impl_block",
-            Cursor::new(12, 9),
-            Cursor::new(12, 19),
-        ),
-        TestFile::new(
-            "extract_function_from_trait_with_existing_non_empty_impl_block",
-            Cursor::new(12, 29),
-            Cursor::new(12, 34),
-        ),
-        TestFile::new(
-            "extract_method_from_trait_with_multiple_existing_impl_blocks",
-            Cursor::new(22, 9),
-            Cursor::new(22, 19),
-        ),
-        TestFile::new(
-            "extract_method_from_trait_with_multiple_existing_trait_impl_blocks",
-            Cursor::new(30, 9),
-            Cursor::new(30, 19),
+            46,
+            142,
         ),
         TestFile::new(
             "closure_arguments",
-            Cursor::new(4, 5),
-            Cursor::new(4, 36),
-        ),
-        TestFile::new(
-            "preserve_generics",
-            Cursor::new(2, 5),
-            Cursor::new(2, 12),
-        ),
-        TestFile::new(
-            "dont_emit_type_with_hidden_lifetime_parameter",
-            Cursor::new(3, 5),
-            Cursor::new(3, 12),
-        ),
-        TestFile::new(
-            "preserve_generics_from_body",
-            Cursor::new(2, 5),
-            Cursor::new(2, 17),
-        ),
-        TestFile::new(
-            "filter_unused_generics",
-            Cursor::new(3, 5),
-            Cursor::new(3, 12),
-        ),
-        TestFile::new(
-            "empty_generic_param_list",
-            Cursor::new(3, 5),
-            Cursor::new(3, 12),
-        ),
-        TestFile::new(
-            "preserve_where_clause",
-            Cursor::new(2, 5),
-            Cursor::new(2, 12),
-        ),
-        TestFile::new(
-            "filter_unused_where_clause",
-            Cursor::new(3, 5),
-            Cursor::new(3, 12),
-        ),
-        TestFile::new(
-            "nested_generics",
-            Cursor::new(5, 9),
-            Cursor::new(5, 28),
-        ),
-        TestFile::new(
-            "filters_unused_nested_generics",
-            Cursor::new(5, 9),
-            Cursor::new(5, 28),
-        ),
-        TestFile::new(
-            "nested_where_clauses",
-            Cursor::new(5, 9),
-            Cursor::new(5, 28),
-        ),
-        TestFile::new(
-            "filters_unused_nested_where_clauses",
-            Cursor::new(5, 9),
-            Cursor::new(5, 28),
-        ),
-        TestFile::new(
-            "tail_expr_no_extra_control_flow",
-            Cursor::new(3, 5),
-            Cursor::new(6, 11),
-        ),
-        TestFile::new(
-            "non_tail_expr_of_tail_expr_loop",
-            Cursor::new(3, 9),
-            Cursor::new(5, 10),
-        ),
-        TestFile::new(
-            "non_tail_expr_of_tail_if_block",
-            Cursor::new(4, 17),
-            Cursor::new(8, 10),
-        ),
-        TestFile::new(
-            "tail_expr_of_tail_block_nested",
-            Cursor::new(4, 9),
-            Cursor::new(11, 10),
-        ),
-        TestFile::new(
-            "non_tail_expr_with_comment_of_tail_expr_loop",
-            Cursor::new(3, 9),
-            Cursor::new(6, 10),
+            53,
+            86,
         ),
         TestFile::new(
             "comments_in_block_expr",
-            Cursor::new(2, 13),
-            Cursor::new(8, 6),
+            20,
+            127,
+        ),
+        TestFile::new(
+            "continue_loop_nested_labeled",
+            72,
+            88,
+        ),
+        TestFile::new(
+            "copy_custom_used_after",
+            109,
+            123,
+        ),
+        TestFile::new(
+            "copy_used_after",
+            48,
+            60,
+        ),
+        TestFile::new(
+            "does_not_add_extra_whitespace",
+            23,
+            37,
+        ),
+        TestFile::new(
+            "does_not_import_control_flow",
+            33,
+            62,
+        ),
+        TestFile::new(
+            "dont_emit_type_with_hidden_lifetime_parameter",
+            70,
+            79,
+        ),
+        TestFile::new(
+            "empty_generic_param_list",
+            49,
+            58,
+        ),
+        TestFile::new(
+            "extract_cast",
+            23,
+            36,
+        ),
+        TestFile::new(
+            "extract_does_not_tear_body_apart",
+            14,
+            24,
+        ),
+        TestFile::new(
+            "extract_does_not_tear_comments_apart",
+            16,
+            49,
+        ),
+        TestFile::new(
+            "extract_does_not_wrap_res_in_res",
+            59,
+            99,
+        ),
+        TestFile::new(
+            "extract_from_nested",
+            72,
+            79,
+        ),
+        TestFile::new(
+            "extract_function_copies_comment_at_end",
+            30,
+            63,
+        ),
+        TestFile::new(
+            "extract_function_copies_comment_at_start",
+            30,
+            63,
+        ),
+        TestFile::new(
+            "extract_function_copies_comment_in_between",
+            25,
+            78,
+        ),
+        TestFile::new(
+            "extract_function_copies_comment_indented",
+            30,
+            91,
+        ),
+        TestFile::new(
+            "extract_function_does_preserve_whitespace",
+            30,
+            58,
+        ),
+        TestFile::new(
+            "extract_function_from_trait_with_existing_non_empty_impl_block",
+            174,
+            181,
+        ),
+        TestFile::new(
+            "extract_function_long_form_comment",
+            30,
+            62,
+        ),
+        TestFile::new(
+            "extract_method_from_trait_impl",
+            121,
+            133,
+        ),
+        TestFile::new(
+            "extract_method_from_trait_with_existing_non_empty_impl_block",
+            154,
+            166,
+        ),
+        TestFile::new(
+            "extract_method_from_trait_with_multiple_existing_impl_blocks",
+            279,
+            291,
+        ),
+        TestFile::new(
+            "extract_method_from_trait_with_multiple_existing_trait_impl_blocks",
+            411,
+            423,
+        ),
+        TestFile::new(
+            "extract_mut_ref_param_has_no_mut_binding_in_loop",
+            131,
+            141,
+        ),
+        TestFile::new(
+            "extract_partial_block",
+            58,
+            83,
+        ),
+        TestFile::new(
+            "extract_partial_block_single_line",
+            41,
+            49,
+        ),
+        TestFile::new(
+            "extract_return_stmt",
+            21,
+            35,
+        ),
+        TestFile::new(
+            "extract_with_await",
+            36,
+            60,
+        ),
+        TestFile::new(
+            "extract_with_await_and_result_not_producing_match_expr",
+            67,
+            97,
+        ),
+        TestFile::new(
+            "extract_with_await_and_result_producing_match_expr",
+            73,
+            185,
+        ),
+        TestFile::new(
+            "extract_with_await_in_args",
+            36,
+            80,
+        ),
+        TestFile::new(
+            "extract_with_macro_arg",
+            84,
+            94,
+        ),
+        TestFile::new(
+            "filter_unused_generics",
+            56,
+            65,
+        ),
+        TestFile::new(
+            "filter_unused_where_clause",
+            67,
+            76,
+        ),
+        TestFile::new(
+            "filters_unused_nested_generics",
+            176,
+            197,
+        ),
+        TestFile::new(
+            "filters_unused_nested_where_clauses",
+            206,
+            227,
+        ),
+        TestFile::new(
+            "function_expr",
+            14,
+            26,
+        ),
+        TestFile::new(
+            "indented_stmts",
+            51,
+            86,
+        ),
+        TestFile::new(
+            "indented_stmts_inside_mod",
+            77,
+            116,
+        ),
+        TestFile::new(
+            "it_should_not_generate_duplicate_function_names",
+            19,
+            31,
+        ),
+        TestFile::new(
+            "method_to_freestanding",
+            54,
+            59,
+        ),
+        TestFile::new(
+            "method_with_mut",
+            62,
+            76,
+        ),
+        TestFile::new(
+            "method_with_reference",
+            65,
+            80,
+        ),
+        TestFile::new(
+            "multi_variables_defined_inside_and_used_after_mutably_no_ret",
+            29,
+            107,
+        ),
+        TestFile::new(
+            "mut_field_from_outer_scope",
+            62,
+            73,
+        ),
+        TestFile::new(
+            "mut_method_call",
+            124,
+            134,
+        ),
+        TestFile::new(
+            "mut_nested_field_from_outer_scope",
+            158,
+            199,
+        ),
+        TestFile::new(
+            "mut_param_because_of_mut_ref",
+            33,
+            63,
+        ),
+        TestFile::new(
+            "mut_param_many_usages_expr",
+            225,
+            401,
+        ),
+        TestFile::new(
+            "mut_param_many_usages_stmt",
+            225,
+            353,
+        ),
+        TestFile::new(
+            "mut_var_from_outer_scope",
+            33,
+            42,
+        ),
+        TestFile::new(
+            "nested_generics",
+            150,
+            171,
+        ),
+        TestFile::new(
+            "nested_where_clauses",
+            174,
+            195,
+        ),
+        TestFile::new(
+            "no_args_for",
+            14,
+            36,
+        ),
+        TestFile::new(
+            "no_args_from_binary_expr",
+            18,
+            25,
+        ),
+        TestFile::new(
+            "no_args_from_binary_expr_in_module",
+            36,
+            43,
+        ),
+        TestFile::new(
+            "no_args_from_binary_expr_indented",
+            14,
+            25,
+        ),
+        TestFile::new(
+            "no_args_from_loop_unit",
+            14,
+            47,
+        ),
+        TestFile::new(
+            "no_args_from_loop_with_return",
+            22,
+            72,
+        ),
+        TestFile::new(
+            "no_args_from_match",
+            27,
+            91,
+        ),
+        TestFile::new(
+            "no_args_from_stmt_unit",
+            29,
+            60,
+        ),
+        TestFile::new(
+            "no_args_from_stmt_with_last_expr",
+            36,
+            58,
+        ),
+        TestFile::new(
+            "no_args_if",
+            14,
+            27,
+        ),
+        TestFile::new(
+            "no_args_if_else",
+            21,
+            47,
+        ),
+        TestFile::new(
+            "no_args_if_let_else",
+            21,
+            59,
+        ),
+        TestFile::new(
+            "no_args_match",
+            21,
+            80,
+        ),
+        TestFile::new(
+            "no_args_while",
+            14,
+            30,
+        ),
+        TestFile::new(
+            "non_tail_expr_of_tail_expr_loop",
+            31,
+            74,
+        ),
+        TestFile::new(
+            "non_tail_expr_of_tail_if_block",
+            78,
+            153,
+        ),
+        TestFile::new(
+            "non_tail_expr_with_comment_of_tail_expr_loop",
+            31,
+            95,
+        ),
+        TestFile::new(
+            "nontrivial_patterns_define_variables",
+            35,
+            65,
+        ),
+        TestFile::new(
+            "param_from_closure",
+            37,
+            44,
+        ),
+        TestFile::new(
+            "param_usage_in_macro",
+            78,
+            98,
+        ),
+        TestFile::new(
+            "param_usage_in_macro_with_nested_tt",
+            93,
+            123,
+        ),
+        TestFile::new(
+            "param_usage_in_macro_with_nested_tt_2",
+            119,
+            154,
+        ),
+        TestFile::new(
+            "part_of_expr_stmt",
+            14,
+            17,
+        ),
+        TestFile::new(
+            "preserve_generics",
+            29,
+            38,
+        ),
+        TestFile::new(
+            "preserve_generics_from_body",
+            32,
+            46,
+        ),
+        TestFile::new(
+            "preserve_where_clause",
+            37,
+            46,
+        ),
+        TestFile::new(
+            "reference_mutable_param_with_further_usages",
+            70,
+            86,
+        ),
+        TestFile::new(
+            "reference_mutable_param_without_further_usages",
+            70,
+            86,
+        ),
+        TestFile::new(
+            "return_from_nested_fn",
+            48,
+            133,
+        ),
+        TestFile::new(
+            "return_from_nested_loop",
+            39,
+            128,
+        ),
+        TestFile::new(
+            "return_to_parent",
+            63,
+            108,
+        ),
+        TestFile::new(
+            "should_increment_suffix_until_it_finds_space",
+            54,
+            66,
+        ),
+        TestFile::new(
+            "struct_with_two_fields_pattern_define_variables",
+            49,
+            100,
+        ),
+        TestFile::new(
+            "tail_expr_no_extra_control_flow",
+            58,
+            110,
+        ),
+        TestFile::new(
+            "tail_expr_of_tail_block_nested",
+            70,
+            214,
+        ),
+        TestFile::new(
+            "try_and_return_ok",
+            69,
+            150,
+        ),
+        TestFile::new(
+            "try_option",
+            102,
+            138,
+        ),
+        TestFile::new(
+            "try_option_unit",
+            64,
+            100,
+        ),
+        TestFile::new(
+            "try_option_with_return",
+            64,
+            144,
+        ),
+        TestFile::new(
+            "try_result",
+            69,
+            105,
+        ),
+        TestFile::new(
+            "try_result_with_return",
+            69,
+            151,
+        ),
+        TestFile::new(
+            "two_arguments_form_expr",
+            51,
+            58,
+        ),
+        TestFile::new(
+            "two_variables_defined_inside_and_used_after_no_ret",
+            29,
+            64,
+        ),
+        TestFile::new(
+            "unresolveable_types_default_to_placeholder",
+            48,
+            53,
+        ),
+        TestFile::new(
+            "variable_defined_inside_and_used_after_mutably_no_ret",
+            29,
+            49,
+        ),
+        TestFile::new(
+            "variable_defined_inside_and_used_after_no_ret",
+            29,
+            45,
         ),
     ];
 }

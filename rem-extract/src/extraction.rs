@@ -1,9 +1,10 @@
 use std::{
-    convert, f128::consts::E, fs, io::{
+    fs,
+    io::{
         self,
-        ErrorKind,
-        Read,
-    }, path::PathBuf
+        ErrorKind
+    },
+    path::PathBuf
 };
 
 use ra_ap_project_model::{

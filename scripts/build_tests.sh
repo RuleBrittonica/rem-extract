@@ -5,13 +5,17 @@ rm -rf ./input
 rm -rf ./output
 rm -rf ./expected_output
 
+# Fixup the Cargo.toml file
+python ./scripts/fixup_cargotoml.py
+
 # Then make the starting dirs
 mkdir -p ./input
 mkdir -p ./output
 mkdir -p ./expected_output
 
 # Now we need to generate the input files, using the python scripts
-python3 ./extract_tests.py
-python3 ./extract_tests_2.py
-python3 ./extract_tests_3.py
-python3 ./fixup_semicolons.py
+python ./1_make_rust_toolchaintoml.py
+python ./2_extract_tests.py
+python ./3_make_test_details_rs.py
+python ./4_convert_to_project.py
+python ./5_fixup_semicolons.py
