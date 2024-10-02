@@ -214,7 +214,7 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
     if contents.contains(";;") {
         let _ = fixup_double_semicolon( &output_abs_path )?;
     }
-    if contents.contains(")  {") {
+    if contents.contains(")  ") {
         let _ = fixup_doublespace( &output_abs_path )?;
     }
 

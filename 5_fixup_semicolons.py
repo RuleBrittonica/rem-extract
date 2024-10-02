@@ -40,3 +40,24 @@ for project in os.listdir(input_directory):
                 file.write(code)
 
 print("Completed processing acceptable files.")
+
+# Also go through all the files in the dirs and remove any double semicolons
+# (e.g. ";;") and replace them with a single semicolon
+for rs_file in os.listdir(input_directory):
+    if rs_file.endswith('.rs'):
+        rs_path = os.path.join(input_directory, rs_file)
+        with open(rs_path, 'r') as file:
+            code = file.read()
+        code = code.replace(";;", ";")
+        with open(rs_path, 'w') as file:
+            file.write(code)
+for project in os.listdir(input_directory):
+    rs_path = os.path.join(input_directory, project, 'src', 'main.rs')
+    if os.path.exists(rs_path):  # Check if main.rs exists
+        with open(rs_path, 'r') as file:
+            code = file.read()
+        code = code.replace(";;", ";")
+        with open(rs_path, 'w') as file:
+            file.write(code)
+
+print("Removed double semicolons.")

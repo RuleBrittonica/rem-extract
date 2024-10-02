@@ -523,9 +523,9 @@ pub fn fixup_doublespace(
 ) -> Result<&AbsPathBuf, ExtractionError> {
     let path: PathBuf = PathBuf::from( output_path.to_string() );
     let mut text: String = fs::read_to_string( &path ).unwrap();
-    let double_space: &str = ")  {";
+    let double_space: &str = ")  ";
     if text.contains( double_space ) {
-        text = text.replace( double_space, ") {" );
+        text = text.replace( double_space, ") " );
         let write_result = fs::write( &path, text );
         match write_result {
             Ok(_) => Ok( output_path ),
