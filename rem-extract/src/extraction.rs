@@ -56,7 +56,7 @@ use ra_ap_load_cargo::{
 use crate::{
     error::ExtractionError,
     extraction_utils::{
-        convert_to_abs_path_buf,
+        apply_extract_function, convert_to_abs_path_buf, cursor_to_offset, filter_extract_function_assist, get_assists, get_cargo_config, get_cargo_toml, get_manifest_dir, load_project_manifest, load_project_workspace, load_workspace_data, run_analysis
     },
 };
 
@@ -197,15 +197,44 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
     // Get info about the files
     let input_path: &str = &input.file_path;
     let output_path: &str = &input.output_path;
-    let new_fn_name: &str = &input.new_fn_name;
+    let callee_name: &str = &input.new_fn_name;
 
-    // Convert the output path to an `AbsPathBuf`
+    // Convert the input and output path to an `AbsPathBuf`
+    let input_abs_path: AbsPathBuf = convert_to_abs_path_buf(input_path).unwrap();
     let output_abs_path: AbsPathBuf = convert_to_abs_path_buf(output_path).unwrap();
     // print!("Output Path: {:?}", output_abs_path);
 
+    // Verify the input data
     verify_input(&input)?;
 
+    let manifest_dir: PathBuf = get_manifest_dir(
+        &PathBuf::from(input_abs_path.as_str())
+    )?;
+    let cargo_toml: AbsPathBuf = get_cargo_toml( &manifest_dir );
+    let project_manifest: ProjectManifest = load_project_manifest( &cargo_toml );
+    let cargo_config: CargoConfig = get_cargo_config( &project_manifest );
+    let workspace: ProjectWorkspace = load_project_workspace( &project_manifest, &cargo_config );
+    let (db, vfs) = load_workspace_data(workspace, &cargo_config);
 
+    let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
+    let analysis: Analysis = run_analysis( analysis_host );
+
+    // Parse the cursor positions into the range
+    let range: (u32, u32) = (
+        cursor_to_offset(&input_abs_path, &start_cursor),
+        cursor_to_offset(&input_abs_path, &end_cursor)
+    );
+
+    let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
+    let assist: Assist = filter_extract_function_assist(assists);
+
+    apply_extract_function(
+        &assist,
+        &input_abs_path,
+        &output_abs_path,
+        &vfs,
+        &callee_name,
+    );
 
     Ok(PathBuf::new())
 }

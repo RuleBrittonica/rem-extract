@@ -66,7 +66,7 @@ use ra_ap_load_cargo::{
 
 
 // TODO
-pub fn cursor_to_offset( cursor: &Cursor ) -> u32 {
+pub fn cursor_to_offset( file_path: &AbsPathBuf, cursor: &Cursor ) -> u32 {
    0 as u32
 }
 
@@ -145,8 +145,23 @@ pub fn convert_to_abs_path_buf(path: &str) -> Result<AbsPathBuf, Utf8PathBuf> {
             }
 
             // Attempt to convert the normalized path to AbsPathBuf
-            AbsPathBuf::try_from(normalized_path.to_str().unwrap())
-                .map_err(|e| e) // Return the error if the resolved path is still invalid
+            let abs_path = AbsPathBuf::try_from(normalized_path.to_str().unwrap())
+                .map_err(|e| e); // Return the error if the resolved path is still invalid
+            println!("Resolved path: {:?}", abs_path);
+
+            // If the abs_path as a string starts with either a \ or a ? (or some
+            // combination), strip it out
+
+            let abs_path_str: String = abs_path.unwrap().to_string();
+            let abs_path_str: String = abs_path_str
+                .replace(r"\\?\", "");
+
+            let new_abs_path = AbsPathBuf::try_from(abs_path_str.as_str())
+                .map_err(|e| e);
+
+            println!("New abs path: {:?}", new_abs_path);
+            new_abs_path
+
         }
     }
 }
@@ -167,6 +182,12 @@ pub fn load_project_manifest( cargo_toml: &AbsPathBuf ) -> ProjectManifest {
     ProjectManifest::from_manifest_file(
         cargo_toml.clone()
     ).unwrap()
+}
+
+/// Loads in the custom cargo configuration
+/// TODO This is currently just the derived default.
+pub fn get_cargo_config( _manifest: &ProjectManifest ) -> CargoConfig {
+    CargoConfig::default()
 }
 
 pub fn progress( _message: String ) -> () {
@@ -212,7 +233,7 @@ pub fn load_workspace_data(
 }
 
 /// Runs the analysis on an AnalysisHost. A wrapper around `AnalysisHost::analysis`
-fn run_analysis( host: AnalysisHost ) -> Analysis {
+pub fn run_analysis( host: AnalysisHost ) -> Analysis {
 
     let analysis: Analysis = host.analysis();
 
@@ -220,11 +241,10 @@ fn run_analysis( host: AnalysisHost ) -> Analysis {
 }
 
 /// Gets a list of available assists for a given file and range
-fn get_assists (
+pub fn get_assists (
     analysis: &Analysis,
-    manifest_dir: &PathBuf,
     vfs: &Vfs,
-    path_components: &Vec<&str>, // Vec of path components, e.g. [ "src", "main.rs" ]
+    input_path: &AbsPathBuf,
     range: (u32, u32), // Tuple of start and end offsets
 ) -> Vec<Assist> {
 
@@ -267,13 +287,9 @@ fn get_assists (
     );
 
     // Build out the FileRange
-    let mut file_path: PathBuf = manifest_dir.clone();
-    for component in path_components {
-        file_path = file_path.join( component );
-    }
     let vfs_path: VfsPath = VfsPath::new_real_path(
-        file_path
-            .to_string_lossy()
+        input_path
+            .as_str()
             .to_string(),
     );
 
@@ -318,25 +334,20 @@ pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Assist {
 /// Requires the output path to be an `AbsPathBuf`.
 pub fn apply_extract_function(
     assist: &Assist,
-    manifest_dir: &PathBuf,
-    vfs: &Vfs,
-    path_components: &Vec<&str>, // Vec of path components, e.g. [ "src", "main.rs" ]
+    input_path: &AbsPathBuf,
     output_path: &AbsPathBuf,
+    vfs: &Vfs,
     callee_name: &str,
 ) -> PathBuf {
-    // Copy the source file to the output directory
-    let mut in_file_path: PathBuf = manifest_dir.clone();
-    for component in path_components {
-        in_file_path = in_file_path.join( component );
-    }
+
     let vfs_in_path: VfsPath = VfsPath::new_real_path(
-        in_file_path
-            .to_string_lossy()
+        input_path
+            .as_str()
             .to_string(),
     );
 
     let vfs_out_path: VfsPath = VfsPath::new_real_path(
-        output_path
+        input_path
             .as_str()
             .to_string(),
     );
