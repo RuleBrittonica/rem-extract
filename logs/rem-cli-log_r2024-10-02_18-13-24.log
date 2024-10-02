@@ -1,0 +1,13 @@
+2024-10-02 18:13:06 [INFO] - Application Started
+2024-10-02 18:13:06 [INFO] - Running 'test' subcommand
+2024-10-02 18:13:06 [INFO] - Verbose: no
+2024-10-02 18:13:06 [INFO] - Starting tests...
+2024-10-02 18:13:06 [INFO] - Test 1 | FAILED: No Extract Function Assist found for the given selection of assists [Assist { id: AssistId("extract_variable", RefactorExtract), label: "Extract into variable", group: None, target: 20..25, source_change: None, command: None }] | N/A: no_args_from_binary_expr in 202.13ms
+2024-10-02 18:13:06 [INFO] - Test 2 | PASSED | FAILED: no_args_from_binary_expr_in_module in 342.91ms
+2024-10-02 18:13:07 [INFO] - Test 3 | FAILED: No Extract Function Assist found for the given selection of assists [Assist { id: AssistId("extract_variable", RefactorExtract), label: "Extract into variable", group: None, target: 16..25, source_change: None, command: None }] | N/A: no_args_from_binary_expr_indented in 339.00ms
+2024-10-02 18:13:07 [INFO] - Test 4 | PASSED | FAILED: no_args_from_stmt_with_last_expr in 390.68ms
+2024-10-02 18:13:07 [INFO] - Test 5 | PASSED | FAILED: no_args_from_stmt_unit in 427.64ms
+2024-10-02 18:13:08 [INFO] - Test 6 | PASSED | FAILED: no_args_if in 380.73ms
+2024-10-02 18:13:08 [INFO] - Test 7 | PASSED | FAILED: no_args_if_else in 374.11ms
+2024-10-02 18:13:09 [INFO] - Test 8 | PASSED | FAILED: no_args_if_let_else in 418.12ms
+2024-10-02 18:13:09 [INFO] - Test 9 | PASSED | FAILED: no_args_match in 447.65ms

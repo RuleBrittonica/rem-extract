@@ -91,7 +91,22 @@ fn print_file_diff(expected_file_path: &str, output_file_path: &str) -> Result<(
     Ok(())
 }
 
+/// Removes all files in a given directory
+fn remove_all_files(dir: &PathBuf) -> () {
+    for entry in fs::read_dir(dir).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_file() {
+            fs::remove_file(path).unwrap();
+        }
+    }
+}
+
 pub fn test() {
+    // Clear the output directory before running tests
+    let output_dir = PathBuf::from("./output");
+    remove_all_files(&output_dir);
+
     // Measure total time at the start
     let overall_start_time: Instant = Instant::now();
 
@@ -112,6 +127,8 @@ pub fn test() {
         total_tests += 1;
 
         let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
+        println!("Extraction Test File: {}", input_file_path);
+
         let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
         let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
 
@@ -258,6 +275,10 @@ pub fn test() {
 }
 
 pub fn test_verbose() {
+    // Clear the output directory before running tests
+    let output_dir = PathBuf::from("./output");
+    remove_all_files(&output_dir);
+
     // Measure total time at the start
     let overall_start_time: Instant = Instant::now();
 
@@ -278,6 +299,7 @@ pub fn test_verbose() {
         total_tests += 1;
 
         let input_file_path: String = format!("input\\{}\\src\\main.rs", test_file.input_file);
+        println!("Extraction Test File: {}", input_file_path);
         let output_file_path: String = format!("output\\{}.rs", test_file.input_file);
         let expected_file_path: String = format!("correct_output\\{}.rs", test_file.input_file);
 
@@ -324,7 +346,7 @@ pub fn test_verbose() {
 
         let test_name: &str = test_file.input_file.trim_end_matches(".rs");
         let mut extraction_status: String = "FAILED".red().to_string();
-        let mut comparison_status: String = "N/A".to_string(); // Default to not applicable
+        let mut comparison_status: String = "N/A".cyan().to_string(); // Default to not applicable
 
         if extraction_result.is_ok() {
             extraction_status = "PASSED".green().to_string();

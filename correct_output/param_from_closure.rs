@@ -5,3 +5,7 @@ fn main() {
 fn fun_name(x: u32) -> u32 {
     x * 2
 }
+
+fn main() {
+
+}

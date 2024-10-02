@@ -6,3 +6,7 @@ fn func<T: Debug>(i: Struct<'_, T>) {
 fn fun_name(i: Struct<'_, T>) {
     foo(i);
 }
+
+fn main() {
+
+}

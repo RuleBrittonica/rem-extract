@@ -1,0 +1,13 @@
+2024-10-02 17:47:10 [INFO] - Application Started
+2024-10-02 17:47:10 [INFO] - Running 'test' subcommand
+2024-10-02 17:47:10 [INFO] - Verbose: yes
+2024-10-02 17:47:10 [INFO] - Starting tests...
+2024-10-02 17:47:10 [INFO] - Test 1 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr in 350.49ms
+2024-10-02 17:47:11 [INFO] - Test 2 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr_in_module in 349.51ms
+2024-10-02 17:47:11 [INFO] - Test 3 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr_indented in 325.14ms
+2024-10-02 17:47:11 [INFO] - Test 4 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_with_last_expr in 346.61ms
+2024-10-02 17:47:12 [INFO] - Test 5 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_unit in 316.21ms
+2024-10-02 17:47:12 [INFO] - Test 6 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_if in 344.69ms
+2024-10-02 17:47:12 [INFO] - Test 7 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_if_else in 305.70ms
+2024-10-02 17:47:13 [INFO] - Test 8 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_if_let_else in 347.25ms
+2024-10-02 17:47:13 [INFO] - Test 9 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_match in 322.25ms

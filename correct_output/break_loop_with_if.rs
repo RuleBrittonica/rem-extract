@@ -16,3 +16,7 @@ fn fun_name(n: &mut i32) -> ControlFlow<()> {
     *n += m;
     ControlFlow::Continue(())
 }
+
+fn main() {
+
+}

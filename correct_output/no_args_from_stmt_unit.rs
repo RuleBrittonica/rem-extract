@@ -8,3 +8,7 @@ fn fun_name() {
     let m = 1;
     let n = m + 1;
 }
+
+fn main() {
+
+}

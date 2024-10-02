@@ -82,3 +82,9 @@ def process_tests(input_file, csv_file):
 # Run the script
 process_tests(input_file, csv_file)
 print(f"Processing complete. Files are saved in '{input_dir}' and '{output_dir}', and the CSV file is '{csv_file}'.")
+
+import os
+
+# Append fn main() {} to each of the correct output files
+
+

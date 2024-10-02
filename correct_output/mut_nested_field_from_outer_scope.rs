@@ -12,3 +12,7 @@ fn fun_name(c: &mut C, u: &C, v: &mut C) {
     c.p.n += u.p.n;
     let r = &mut v.p.n;
 }
+
+fn main() {
+
+}

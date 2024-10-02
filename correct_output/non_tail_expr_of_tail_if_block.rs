@@ -14,3 +14,7 @@ fn fun_name() -> Option<()> {
         ()
     })
 }
+
+fn main() {
+
+}

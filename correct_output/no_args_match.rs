@@ -8,3 +8,7 @@ fn fun_name() -> i32 {
         false => 2,
     }
 }
+
+fn main() {
+
+}

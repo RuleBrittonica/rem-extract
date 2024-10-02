@@ -5,3 +5,7 @@ fn foo() {
 fn fun_name() -> i32 {
     1
 }
+
+fn main() {
+
+}

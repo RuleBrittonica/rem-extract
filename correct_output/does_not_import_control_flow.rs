@@ -5,3 +5,7 @@ fn func() {
 fn fun_name() {
     let cf = "I'm ControlFlow";
 }
+
+fn main() {
+
+}

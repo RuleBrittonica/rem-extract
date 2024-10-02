@@ -9,3 +9,7 @@ impl <T, U> Struct<T, U> where T: Into<i32> + Copy, U: Debug {
 fn fun_name<T, V>(t: T, v: V) -> i32 where T: Into<i32> + Copy, V: Into<i32> {
     t.into() + v.into()
 }
+
+fn main() {
+
+}

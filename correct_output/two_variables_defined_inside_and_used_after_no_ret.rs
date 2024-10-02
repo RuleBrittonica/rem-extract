@@ -9,3 +9,7 @@ fn fun_name(n: i32) -> (i32, i32) {
     let m = k + 2;
     (k, m)
 }
+
+fn main() {
+
+}

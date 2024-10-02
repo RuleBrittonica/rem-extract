@@ -13,3 +13,7 @@ fn fun_name(n: i32) -> Result<i32, i64> {
     let k = 2;
     Ok(k)
 }
+
+fn main() {
+
+}

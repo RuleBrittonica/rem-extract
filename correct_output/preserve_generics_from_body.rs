@@ -5,3 +5,7 @@ fn func<T: Default>() -> T {
 fn fun_name<T: Default>() -> T {
     T::default()
 }
+
+fn main() {
+
+}

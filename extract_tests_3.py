@@ -67,6 +67,15 @@ for folder in os.listdir(input_directory):
         with open(main_rs_path, 'a') as main_file:
             main_file.write("\n\nfn main() {\n\n}\n")
 
+# Define the directory containing the files
+directory = "correct_output"
+# Loop through all files in the directory
+for filename in os.listdir(directory):
+    file_path = os.path.join(directory, filename)
+    if os.path.isfile(file_path):
+        with open(file_path, "a") as file:
+            file.write("\n\nfn main() {\n\n}\n")
+
 # Create the toolchain file
 with open(toolchain, 'w') as f:
     f.write(toolchain_contents)

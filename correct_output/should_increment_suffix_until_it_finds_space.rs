@@ -9,3 +9,7 @@ fn fun_name() {
 fn fun_name2() {
     let x = 0;
 }
+
+fn main() {
+
+}

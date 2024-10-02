@@ -7,3 +7,7 @@ fn foo() -> u32 {
 fn fun_name(n: u32, m: u32) -> u32 {
     n+n*m
 }
+
+fn main() {
+
+}

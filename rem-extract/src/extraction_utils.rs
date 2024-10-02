@@ -153,7 +153,6 @@ pub fn convert_to_abs_path_buf(path: &str) -> Result<AbsPathBuf, Utf8PathBuf> {
 
             // println!("New abs path: {:?}", new_abs_path);
             new_abs_path
-
         }
     }
 }
@@ -310,14 +309,18 @@ pub fn get_assists (
 /// Filter the list of assists to only be the extract_function assist
 /// FIXME This is a hack to get around the fact that the resolve strategy is bugged
 /// and is returning both extract_variable and extract_function
-pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Assist {
-    let extract_assist = assists
+/// Throws ExtractionError::NoExtractFunction if no assist found
+pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Result<Assist, ExtractionError> {
+    if let Some(extract_assist) = assists
         .iter()
-        .find( |assist| assist.label == "Extract into function" )
-        .unwrap()
-        .clone();
-
-    extract_assist
+        .find(|assist| assist.label == "Extract into function")
+        {
+            // Return the found assist
+            Ok(extract_assist.clone())
+        } else {
+            // Return the error
+            Err(ExtractionError::NoExtractFunction( assists ))
+        }
 }
 
 /// Copies the source file to the output file path.

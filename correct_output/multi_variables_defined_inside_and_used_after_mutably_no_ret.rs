@@ -12,3 +12,7 @@ fn fun_name(n: i32) -> (i32, i32, i32) {
     o += 1;
     (k, m, o)
 }
+
+fn main() {
+
+}

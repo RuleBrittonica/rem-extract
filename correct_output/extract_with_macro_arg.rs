@@ -9,3 +9,7 @@ fn main() {
 fn fun_name(bar: &str) {
     m!(bar);
 }
+
+fn main() {
+
+}

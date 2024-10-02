@@ -9,3 +9,7 @@ async fn fun_name() {
 async fn some_function() {
 
 }
+
+fn main() {
+
+}

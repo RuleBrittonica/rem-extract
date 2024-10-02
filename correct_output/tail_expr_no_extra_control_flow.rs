@@ -8,3 +8,7 @@ fn fun_name() -> Result<(), ()> {
     }
     Ok(())
 }
+
+fn main() {
+
+}

@@ -5,3 +5,7 @@ fn foo() -> u32 {
 fn fun_name() -> u32 {
     2 + 2
 }
+
+fn main() {
+
+}

@@ -12,3 +12,7 @@ mod bar {
         let m = 2;
     }
 }
+
+fn main() {
+
+}

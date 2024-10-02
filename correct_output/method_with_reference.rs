@@ -1,4 +1,4 @@
-struct S { f: i32 };
+struct S { f: i32 }
 
 impl S {
     fn foo(&self) -> i32 {
@@ -8,4 +8,8 @@ impl S {
     fn fun_name(&self) -> i32 {
         self.f+self.f
     }
+}
+
+fn main() {
+
 }

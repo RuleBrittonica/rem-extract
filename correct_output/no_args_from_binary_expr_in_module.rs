@@ -7,3 +7,7 @@ mod bar {
         1 + 1
     }
 }
+
+fn main() {
+
+}

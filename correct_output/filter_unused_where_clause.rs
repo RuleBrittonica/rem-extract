@@ -6,3 +6,7 @@ fn func<T, U>(i: T, u: U) where T: Debug, U: Copy {
 fn fun_name<T>(i: T) where T: Debug {
     foo(i);
 }
+
+fn main() {
+
+}

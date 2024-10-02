@@ -7,3 +7,7 @@ fn fun_name() {
     /* a comment */
     let x = 0;
 }
+
+fn main() {
+
+}

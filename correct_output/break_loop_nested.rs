@@ -17,3 +17,7 @@ fn fun_name(n: i32) -> ControlFlow<()> {
     }
     ControlFlow::Continue(())
 }
+
+fn main() {
+
+}

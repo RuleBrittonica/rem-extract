@@ -9,3 +9,7 @@ fn fun_name() {
         // comment here!
     }
 }
+
+fn main() {
+
+}

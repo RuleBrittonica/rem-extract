@@ -59,7 +59,6 @@ impl Cursor {
         let mut file = fs::File::open(file_path)?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
-
         let lines: Vec<&str> = content.lines().collect();
 
         let line_idx = self.line - 1;
@@ -173,8 +172,6 @@ fn check_columns(input: &ExtractionInput) -> Result<(), ExtractionError> {
     if input.start_cursor.line == input.end_cursor.line
         && input.start_cursor.column > input.end_cursor.column
     {
-        println!("Start Cursor: {:?}", input.start_cursor);
-        println!("End Cursor {:?}", input.end_cursor);
         return Err(ExtractionError::InvalidColumnRange);
     }
 
@@ -185,7 +182,6 @@ fn check_cursor_not_equal(input: &ExtractionInput) -> Result<(), ExtractionError
     if input.start_cursor == input.end_cursor {
         return Err(ExtractionError::SameCursor);
     }
-
     Ok(())
 }
 
@@ -227,36 +223,34 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
         &PathBuf::from(input_abs_path.as_str())
     )?;
     let cargo_toml: AbsPathBuf = get_cargo_toml( &manifest_dir );
-
     // println!("Cargo.toml {:?}", cargo_toml);
 
     let project_manifest: ProjectManifest = load_project_manifest( &cargo_toml );
-
     // println!("Project Manifest {:?}", project_manifest);
 
     let cargo_config: CargoConfig = get_cargo_config( &project_manifest );
-
     // println!("Cargo Config {:?}", cargo_config);
 
     let workspace: ProjectWorkspace = load_project_workspace( &project_manifest, &cargo_config );
-
     // println!("Project Workspace {:?}", workspace);
 
     let (db, vfs) = load_workspace_data(workspace, &cargo_config);
+    // println!("Database {:?}", db);
+    // println!("VFS {:?}", vfs);
 
     let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
     let analysis: Analysis = run_analysis( analysis_host );
-
     // println!("Analysis {:?}", analysis);
 
     // Parse the cursor positions into the range
     let range: (u32, u32) = (
         start_cursor.to_offset(&input_abs_path)?,
-        end_cursor.to_offset(&output_abs_path)?
+        end_cursor.to_offset(&input_abs_path)?
     );
 
     let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
-    let assist: Assist = filter_extract_function_assist(assists);
+
+    let assist: Assist = filter_extract_function_assist(assists)?;
 
     apply_extract_function(
         &assist,

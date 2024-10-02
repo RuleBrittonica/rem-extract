@@ -7,3 +7,7 @@ fn parent(factor: i32) {
 fn fun_name(v: &[i32; 3], factor: i32) {
     v.iter().map(|it| it * factor);
 }
+
+fn main() {
+
+}

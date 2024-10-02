@@ -17,3 +17,7 @@ impl Trait for Struct {
 fn fun_name() -> i32 {
     3 * 3
 }
+
+fn main() {
+
+}

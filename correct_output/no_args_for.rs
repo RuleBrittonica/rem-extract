@@ -5,3 +5,7 @@ fn foo() {
 fn fun_name() {
     for v in &[0, 1] { }
 }
+
+fn main() {
+
+}

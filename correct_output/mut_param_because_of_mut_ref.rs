@@ -8,3 +8,7 @@ fn fun_name(n: &mut i32) {
     let v = n;
     *v += 1;
 }
+
+fn main() {
+
+}

@@ -7,3 +7,7 @@ fn fun_name() -> i32 {
     let m = 1;
     m + 1
 }
+
+fn main() {
+
+}

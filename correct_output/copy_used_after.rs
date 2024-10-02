@@ -7,3 +7,7 @@ fn foo() {
 fn fun_name(n: i32) {
     let m = n;
 }
+
+fn main() {
+
+}

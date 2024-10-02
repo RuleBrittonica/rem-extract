@@ -15,3 +15,7 @@ impl S {
         k
     }
 }
+
+fn main() {
+
+}

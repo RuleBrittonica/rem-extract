@@ -14,3 +14,7 @@ impl Struct {
         self.0 + 2
     }
 }
+
+fn main() {
+
+}

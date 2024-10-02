@@ -12,3 +12,7 @@ fn foo() {
 fn fun_name(mut n: i32) {
     n.inc();
 }
+
+fn main() {
+
+}

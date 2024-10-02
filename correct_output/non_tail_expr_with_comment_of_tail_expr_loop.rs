@@ -16,3 +16,7 @@ fn fun_name() -> ControlFlow<()> {
     }
     ControlFlow::Continue(())
 }
+
+fn main() {
+
+}

@@ -9,3 +9,7 @@ impl <T: Into<i32> + Copy, U: Debug> Struct<T, U> {
 fn fun_name<T: Into<i32> + Copy, V: Into<i32>>(t: T, v: V) -> i32 {
     t.into() + v.into()
 }
+
+fn main() {
+
+}

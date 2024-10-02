@@ -1,6 +1,7 @@
 use std::fmt;
 use std::io;
 use syn::Error as SynError;
+use ra_ap_ide_assists::Assist;
 
 #[derive(Debug)]
 pub enum ExtractionError {
@@ -11,6 +12,8 @@ pub enum ExtractionError {
     InvalidColumnRange,
     ZeroLineIndex,
     SameCursor,
+    NoAvailableAssist,
+    NoExtractFunction(Vec<Assist>),
 }
 
 impl fmt::Display for ExtractionError {
@@ -23,6 +26,8 @@ impl fmt::Display for ExtractionError {
             ExtractionError::InvalidColumnRange => write!(f, "Invalid column range"),
             ExtractionError::ZeroLineIndex => write!(f, "Line index must be greater than 0. Cursor is 1-indexed."),
             ExtractionError::SameCursor => write!(f, "Start and end cursors are the same"),
+            ExtractionError::NoAvailableAssist => write!(f, "No Available Assists found for the given selection"),
+            ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists)
         }
     }
 }

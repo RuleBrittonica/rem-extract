@@ -8,3 +8,7 @@ fn fun_name() -> i32 {
     let Counter(n) = Counter(0);
     n
 }
+
+fn main() {
+
+}

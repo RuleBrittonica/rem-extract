@@ -23,3 +23,7 @@ fn fun_name(n: &mut i32) {
     *v = v.succ();
     n.succ();
 }
+
+fn main() {
+
+}
