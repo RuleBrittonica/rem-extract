@@ -147,7 +147,7 @@ pub fn convert_to_abs_path_buf(path: &str) -> Result<AbsPathBuf, Utf8PathBuf> {
             // Attempt to convert the normalized path to AbsPathBuf
             let abs_path = AbsPathBuf::try_from(normalized_path.to_str().unwrap())
                 .map_err(|e| e); // Return the error if the resolved path is still invalid
-            println!("Resolved path: {:?}", abs_path);
+            // println!("Resolved path: {:?}", abs_path);
 
             // If the abs_path as a string starts with either a \ or a ? (or some
             // combination), strip it out
@@ -159,7 +159,7 @@ pub fn convert_to_abs_path_buf(path: &str) -> Result<AbsPathBuf, Utf8PathBuf> {
             let new_abs_path = AbsPathBuf::try_from(abs_path_str.as_str())
                 .map_err(|e| e);
 
-            println!("New abs path: {:?}", new_abs_path);
+            // println!("New abs path: {:?}", new_abs_path);
             new_abs_path
 
         }

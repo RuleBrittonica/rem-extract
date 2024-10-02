@@ -4,7 +4,7 @@ import csv
 csv_file = 'test_info.csv'
 
 # Output Rust file
-rust_file = 'rem-extract/src/test_details.rs'
+rust_file = 'src/test_details.rs'
 
 # Function to create the Rust file from the CSV data
 def create_rust_file(csv_file, rust_file):

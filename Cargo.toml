@@ -1,26 +1,20 @@
-[workspace]
-members = [
-    "rem-extract",
-]
-exclude = [
-  "input",
-  "output",
-  "correct_input",
-]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "rem-extract"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.80.0"
-authors = ["Matt Britton <matt.britton@anu.edu.au>"]
-license = "MIT"
+authors = ["Matthew Britton <matt.britton@anu.edu.au>"]
+licence = "MIT"
+description = "Providing extract method capability for the REM toolchain"
 repository = "https://github.com/RuleBrittonica/rem-extract"
+readme = "README.md"
+resolver = "2"
 
+exclude = [
+    "input/**",
+]
 
-[workspace.dependencies]
-# Local Crates
-
-# non-local crates
+[dependencies]
 log = "0.4.22"
 flexi_logger = "0.29.0"
 clap = { version = "4.5.18", features = ["derive"] }
@@ -44,53 +38,16 @@ ra_ap_project_model = "0.0.237"
 ra_ap_rust-analyzer = "0.0.237"
 ra_ap_vfs = "0.0.237"
 
-[workspace.lints.rust]
-# remember to update RUSTFLAGS in ci.yml if you add something here
+[build-dependencies]
 
-elided_lifetimes_in_paths = "warn"
-explicit_outlives_requirements = "warn"
-unsafe_op_in_unsafe_fn = "warn"
-unused_extern_crates = "warn"
-unused_lifetimes = "warn"
-unreachable_pub = "warn"
+[dev-dependencies]
+tempfile = "3.13"
 
-[workspace.lints.clippy]
-## lint groups
-complexity = { level = "warn", priority = -1 }
-correctness = { level = "deny", priority = -1 }
-perf = { level = "deny", priority = -1 }
-restriction = { level = "allow", priority = -1 }
-style = { level = "warn", priority = -1 }
-suspicious = { level = "warn", priority = -1 }
 
-## allow following lints
-too_long_first_doc_paragraph = "allow"
-# subjective
-single_match = "allow"
-# () makes a fine error in most cases
-result_unit_err = "allow"
-# We don't expose public APIs that matter like this
-len_without_is_empty = "allow"
-# We have macros that rely on this currently
-enum_variant_names = "allow"
-# Builder pattern disagrees
-new_ret_no_self = "allow"
-# Has a bunch of false positives
-useless_asref = "allow"
-# Has false positives
-assigning_clones = "allow"
 
-## Following lints should be tackled at some point
-too_many_arguments = "allow"
-type_complexity = "allow"
-wrong_self_convention = "allow"
+[features]
+default = []
 
-## warn at following lints
-# CI raises these to deny
-dbg_macro = "warn"
-todo = "warn"
-print_stdout = "warn"
-print_stderr = "warn"
-
-rc_buffer = "warn"
-str_to_string = "warn"
+[[bin]]
+name = "rem-extract"
+path = "src/main.rs"

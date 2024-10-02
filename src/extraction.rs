@@ -211,13 +211,27 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
         &PathBuf::from(input_abs_path.as_str())
     )?;
     let cargo_toml: AbsPathBuf = get_cargo_toml( &manifest_dir );
+
+    // println!("Cargo.toml {:?}", cargo_toml);
+
     let project_manifest: ProjectManifest = load_project_manifest( &cargo_toml );
+
+    // println!("Project Manifest {:?}", project_manifest);
+
     let cargo_config: CargoConfig = get_cargo_config( &project_manifest );
+
+    // println!("Cargo Config {:?}", cargo_config);
+
     let workspace: ProjectWorkspace = load_project_workspace( &project_manifest, &cargo_config );
+
+    // println!("Project Workspace {:?}", workspace);
+
     let (db, vfs) = load_workspace_data(workspace, &cargo_config);
 
     let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
     let analysis: Analysis = run_analysis( analysis_host );
+
+    // println!("Analysis {:?}", analysis);
 
     // Parse the cursor positions into the range
     let range: (u32, u32) = (

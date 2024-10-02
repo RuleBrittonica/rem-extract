@@ -9,6 +9,16 @@ if not os.path.exists(input_directory):
     print(f"The directory '{input_directory}' does not exist.")
     exit(1)
 
+# Read in rust-toolchain.toml
+# Copy the contents of the file to a string
+# Delete the file (temporarily)
+toolchain = 'rust-toolchain.toml'
+with open(toolchain, 'r') as f:
+    toolchain_contents = f.read()
+    f.close()
+import os
+os.remove(toolchain)
+
 # Iterate over each file in the input directory
 for filename in os.listdir(input_directory):
     if filename.endswith('.rs'):
@@ -56,3 +66,8 @@ for folder in os.listdir(input_directory):
         main_rs_path = os.path.join(input_directory, folder, 'src', 'main.rs')
         with open(main_rs_path, 'a') as main_file:
             main_file.write("\n\nfn main() {\n\n}\n")
+
+# Create the toolchain file
+with open(toolchain, 'w') as f:
+    f.write(toolchain_contents)
+    f.close()

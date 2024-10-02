@@ -1,13 +1,6 @@
 [package]
 name = "mut_nested_field_from_outer_scope"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
+edition = "2021"
 
 [dependencies]
-
-[lints]
-workspace = true

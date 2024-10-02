@@ -1,13 +1,6 @@
 [package]
 name = "extract_partial_block"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
+edition = "2021"
 
 [dependencies]
-
-[lints]
-workspace = true
