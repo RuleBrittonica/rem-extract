@@ -64,6 +64,12 @@ def replace_core_with_std(code):
         affected_files.append(code)
     return new_code
 
+def remove_double_semicolons(code):
+    new_code = code.replace(';;', ';')
+    if code != new_code:
+        affected_files.append(code)
+    return new_code
+
 # Function to process each test and generate files and CSV entries
 def process_tests(input_file, csv_file):
     with open(input_file, 'r') as file, open(csv_file, 'w', newline='') as csvfile:
@@ -91,6 +97,9 @@ def process_tests(input_file, csv_file):
 
                 input_code = replace_core_with_std(input_code)
                 output_code = replace_core_with_std(output_code)
+
+                input_code = remove_double_semicolons(input_code)
+                output_code = remove_double_semicolons(output_code)
 
                 input_code = input_code.strip()
                 output_code = output_code.strip()
