@@ -42,5 +42,8 @@ pub enum EXTRACTCommands {
     Test {
         #[arg(short, long, help = "Enable verbose output", action = ArgAction::SetTrue)]
         verbose: bool,
+
+        # [arg(short, long, help = "Enable spammy output - rustc will yell at you", action = ArgAction::SetTrue)]
+        spammy: bool,
     },
 }

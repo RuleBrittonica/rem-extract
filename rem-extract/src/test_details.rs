@@ -29,23 +29,23 @@ lazy_static! {
         ),
         TestFile::new(
             "break_loop",
-            70,
-            118,
+            49,
+            97,
         ),
         TestFile::new(
             "break_loop_nested",
-            71,
-            135,
+            53,
+            117,
         ),
         TestFile::new(
             "break_loop_nested_labeled",
-            73,
-            84,
+            55,
+            66,
         ),
         TestFile::new(
             "break_loop_with_if",
-            71,
-            116,
+            53,
+            98,
         ),
         TestFile::new(
             "break_stmt",
@@ -79,18 +79,18 @@ lazy_static! {
         ),
         TestFile::new(
             "continue_loop_nested_labeled",
-            73,
-            87,
+            55,
+            69,
         ),
         TestFile::new(
             "copy_custom_used_after",
-            110,
-            122,
+            83,
+            95,
         ),
         TestFile::new(
             "copy_used_after",
-            49,
-            59,
+            30,
+            40,
         ),
         TestFile::new(
             "does_not_add_extra_whitespace",
@@ -99,8 +99,8 @@ lazy_static! {
         ),
         TestFile::new(
             "does_not_import_control_flow",
-            34,
-            61,
+            16,
+            43,
         ),
         TestFile::new(
             "dont_emit_type_with_hidden_lifetime_parameter",
@@ -129,8 +129,8 @@ lazy_static! {
         ),
         TestFile::new(
             "extract_does_not_wrap_res_in_res",
-            60,
-            98,
+            34,
+            72,
         ),
         TestFile::new(
             "extract_from_nested",
@@ -214,23 +214,23 @@ lazy_static! {
         ),
         TestFile::new(
             "extract_with_await",
-            37,
-            59,
+            16,
+            38,
         ),
         TestFile::new(
             "extract_with_await_and_result_not_producing_match_expr",
-            68,
-            96,
+            39,
+            67,
         ),
         TestFile::new(
             "extract_with_await_and_result_producing_match_expr",
-            74,
-            184,
+            53,
+            163,
         ),
         TestFile::new(
             "extract_with_await_in_args",
-            37,
-            79,
+            16,
+            58,
         ),
         TestFile::new(
             "extract_with_macro_arg",
@@ -419,8 +419,8 @@ lazy_static! {
         ),
         TestFile::new(
             "non_tail_expr_of_tail_if_block",
-            79,
-            152,
+            53,
+            126,
         ),
         TestFile::new(
             "non_tail_expr_with_comment_of_tail_expr_loop",
@@ -494,8 +494,8 @@ lazy_static! {
         ),
         TestFile::new(
             "return_to_parent",
-            64,
-            107,
+            37,
+            80,
         ),
         TestFile::new(
             "should_increment_suffix_until_it_finds_space",
@@ -509,43 +509,43 @@ lazy_static! {
         ),
         TestFile::new(
             "tail_expr_no_extra_control_flow",
-            59,
-            109,
+            38,
+            88,
         ),
         TestFile::new(
             "tail_expr_of_tail_block_nested",
-            71,
-            213,
+            45,
+            187,
         ),
         TestFile::new(
             "try_and_return_ok",
-            70,
-            149,
+            49,
+            128,
         ),
         TestFile::new(
             "try_option",
-            103,
-            137,
+            82,
+            116,
         ),
         TestFile::new(
             "try_option_unit",
-            65,
-            99,
+            44,
+            78,
         ),
         TestFile::new(
             "try_option_with_return",
-            65,
-            143,
+            44,
+            122,
         ),
         TestFile::new(
             "try_result",
-            70,
-            104,
+            49,
+            83,
         ),
         TestFile::new(
             "try_result_with_return",
-            70,
-            150,
+            49,
+            129,
         ),
         TestFile::new(
             "two_arguments_form_expr",

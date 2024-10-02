@@ -1,4 +1,4 @@
-use core::ops::ControlFlow;
+use std::ops::ControlFlow;
 
 fn foo() {
     'bar: loop {

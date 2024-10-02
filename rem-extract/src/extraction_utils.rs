@@ -445,11 +445,11 @@ pub fn fixup_controlflow(
     output_path: &AbsPathBuf,
 ) -> Result<&AbsPathBuf, ExtractionError> {
     let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let mut text: String = std::fs::read_to_string( &path ).unwrap();
+    let mut text: String = fs::read_to_string( &path ).unwrap();
     let controlflow_ref: &str = "ControlFlow::";
     if text.contains( controlflow_ref ) {
-        text = format!("use core::ops::ControlFlow;\n{}", text);
-        let write_result = std::fs::write( &path, text );
+        text = format!("use std::ops::ControlFlow;\n\n{}", text);
+        let write_result = fs::write( &path, text );
         match write_result {
             Ok(_) => Ok( output_path ),
             Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
@@ -457,6 +457,201 @@ pub fn fixup_controlflow(
     } else {
         Ok( output_path )
     }
+}
+
+/// Removes any references to `-> _ ` created by the extraction process
+/// Only effects the instance of `-> _ ` that is on the same line as the
+/// extracted function (i.e. the second reference to callee_name in the file)
+/// Returns the path if successful, or ExtractionError::BlankTypeFixupFailed if
+/// not
+pub fn fixup_blanktype<'a>(
+    output_path: &'a AbsPathBuf,
+    callee_name: &'a str,
+) -> Result<&'a AbsPathBuf, ExtractionError> {
+    let path: PathBuf = PathBuf::from( output_path.to_string() );
+    let mut text: String = fs::read_to_string( &path ).unwrap();
+    // Search for the second occurrence of callee_name
+    let occurrences = text
+        .match_indices( callee_name )
+        .collect::<Vec<_>>();
+    // Check if there are at least two occurrences of callee_name
+    if occurrences.len() < 2 {
+        return Err(ExtractionError::BlankTypeFixupFailed( output_path.clone() ));
+    }
+
+    // Get the position of the second occurrence
+    let second_occurrence_pos = occurrences[1].0;
+
+    // Search for `-> _ ` starting after the second occurrence
+    if let Some(index) = text[second_occurrence_pos..].find(" -> _ ") {
+        let replacement_start: usize = second_occurrence_pos + index;
+
+        // Replace `-> _` with " "
+        text.replace_range(replacement_start..(replacement_start + 5), " ");
+
+        // Write the modified content back to the file
+        let write_result = fs::write(&path, text);
+        match write_result {
+            Ok(_) => Ok( output_path ),
+            Err(_) => Err(ExtractionError::BlankTypeFixupFailed( output_path.clone() )),
+        }
+    } else {
+        Ok( output_path )
+    }
+}
+
+pub fn fixup_double_semicolon(
+    output_path: &AbsPathBuf,
+) -> Result<&AbsPathBuf, ExtractionError> {
+    let path: PathBuf = PathBuf::from( output_path.to_string() );
+    let mut text: String = fs::read_to_string( &path ).unwrap();
+    let double_semicolon: &str = ";;";
+    if text.contains( double_semicolon ) {
+        text = text.replace( double_semicolon, ";" );
+        let write_result = fs::write( &path, text );
+        match write_result {
+            Ok(_) => Ok( output_path ),
+            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
+        }
+    } else {
+        Ok( output_path )
+    }
+}
+
+pub fn fixup_doublespace(
+    output_path: &AbsPathBuf,
+) -> Result<&AbsPathBuf, ExtractionError> {
+    let path: PathBuf = PathBuf::from( output_path.to_string() );
+    let mut text: String = fs::read_to_string( &path ).unwrap();
+    let double_space: &str = ")  {";
+    if text.contains( double_space ) {
+        text = text.replace( double_space, ") {" );
+        let write_result = fs::write( &path, text );
+        match write_result {
+            Ok(_) => Ok( output_path ),
+            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
+        }
+    } else {
+        Ok( output_path )
+    }
+}
+
+
+/// Creates an analysis of just the output file, and uses that to fix up the
+/// issues with missing `;`, imports, etc.
+/// Also uses it to remove functions in braces that don't need to be in braces.
+pub fn fixup_outputfile(
+    output_path: &AbsPathBuf,
+) -> Result<&AbsPathBuf, ExtractionError> {
+    let path: PathBuf = PathBuf::from( output_path.to_string() );
+    let text: String = fs::read_to_string( &path ).unwrap();
+    let len:u32 = text.len().try_into().unwrap();
+
+    let (analysis, id) = Analysis::from_single_file( text );
+    let assists: Vec<Assist> = get_all_assists( &analysis, id, len );
+
+    let allowed_assists: Vec<&str> = vec![
+        "Unnecessary braces in use statement",
+        "auto_import"
+    ];
+
+    // Filter out the assists that are not in the allowed list, by checking if
+    // the assist.label is in the allowed_assists list. Due to the impl of
+    // Label, we must filter using == (or some other PartialEq)
+    let filtered_assists: Vec<Assist> = assists.clone()
+        .into_iter()
+        .filter(|assist| allowed_assists
+                .iter()
+                .any(|&allowed| assist.label == allowed)
+        )
+        .collect();
+
+    let unallowed_assists: Vec<&str> = vec![
+        "unscore_unused_variable_name",
+        "change_visibility",
+        "extract_variable",
+        "extract_module",
+    ];
+
+    // Remove any assists from assists that are in unallowed_assists
+    let filtered_assists: Vec<Assist> = assists.clone()
+        .into_iter()
+        .filter(|assist| unallowed_assists
+                .iter()
+                .all(|&unallowed| assist.label != unallowed)
+        )
+        .collect();
+
+    // Print out any assists that are not in filtered_assists
+    for assist in filtered_assists {
+        println!("{:?}", assist);
+    }
+
+    Ok( output_path )
+}
+
+fn get_all_assists(
+    analysis: &Analysis,
+    file_id: FileId,
+    len: u32,
+) -> Vec<Assist> {
+        // Build out the AssistConfig
+    let snippet_cap_: Option<SnippetCap> = None;
+    let allowed_assists: Vec<AssistKind> = vec![
+        AssistKind::QuickFix,
+        AssistKind::Refactor,
+        AssistKind::RefactorInline,
+        AssistKind::RefactorRewrite,
+        AssistKind::Generate,
+        AssistKind::RefactorExtract,
+    ];
+
+    let insert_use_: InsertUseConfig = InsertUseConfig {
+        granularity: ImportGranularity::Preserve,
+        enforce_granularity: false,
+        prefix_kind: PrefixKind::ByCrate,
+        group: false,
+        skip_glob_imports: false,
+    };
+
+    let assist_config: AssistConfig = AssistConfig {
+        snippet_cap: snippet_cap_,
+        allowed: None, //Some(allowed_assists),
+        insert_use: insert_use_,
+        prefer_no_std: false,
+        prefer_prelude: false,
+        prefer_absolute: false,
+        assist_emit_must_use: false,
+        term_search_fuel: 2048, // * NFI what this is
+        term_search_borrowck: false,
+    };
+
+    // Build out the DiagnosticsConfig
+    let diagnostics_config: DiagnosticsConfig = DiagnosticsConfig::test_sample(); // TODO This may need to be specific to the program
+
+    // Build out the ResolveStrategy
+    let resolve: AssistResolveStrategy = AssistResolveStrategy::All;
+
+    let range: TextRange = TextRange::new(
+        TextSize::try_from( 0 as u32 ).unwrap(),
+        // End of the file
+        TextSize::try_from( len ).unwrap(),
+    );
+
+    let frange: FileRange = FileRange {
+        file_id,
+        range,
+    };
+
+    // Call the assists_with_fixes method
+    let assists: Vec<Assist> = analysis.assists_with_fixes(
+        &assist_config,
+        &diagnostics_config,
+        resolve,
+        frange
+    ).unwrap();
+
+    assists
 }
 
 #[cfg(test)]

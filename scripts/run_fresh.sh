@@ -3,7 +3,7 @@
 # First Remove all of the old files and directories
 rm -rf ./input
 rm -rf ./output
-rm -rf ./expected_output
+rm -rf ./correct_output
 
 python ./scripts/fixup_cargotoml.py
 rm -f ./0_test_info.csv
@@ -14,7 +14,7 @@ cargo clean
 # Then make the starting dirs
 mkdir -p ./input
 mkdir -p ./output
-mkdir -p ./expected_output
+mkdir -p ./correct_output
 
 # Now we need to generate the input files, using the python scripts
 python ./1_make_rust_toolchaintoml.py

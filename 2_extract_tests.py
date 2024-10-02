@@ -23,6 +23,8 @@ def find_cursor_position(code):
     cursor_index = code.find('$0')
     return cursor_index
 
+affected_files = []
+
 # Returns the distance between the end of the first cursor and the start of the
 # second cursor
 # E.g., for the code:
@@ -35,6 +37,32 @@ def distance_between_cursors(code):
     if len(cursor_indices) < 2:
         return 0
     return cursor_indices[1] - cursor_indices[0] - 2  # Subtract 2 to account for the $0 characters
+
+# Function to remove comments from the first line of the code
+# E.g., for the code:
+# // This is a comment
+# fn foo() {
+#     println!("Hello, world!");
+# }
+# The function would return:
+# fn foo() {
+#     println!("Hello, world!");
+# }
+def remove_first_line_comment(code):
+    lines = code.split('\n')
+    if len(lines) > 0:
+        lines[0] = re.sub(r'//.*', '', lines[0])
+    new_lines = '\n'.join(lines)
+    if code != new_lines:
+        affected_files.append(code)
+    return new_lines
+
+# Function to replace references to core:: with std:: in the code
+def replace_core_with_std(code):
+    new_code = code.replace('core::', 'std::')
+    if code != new_code:
+        affected_files.append(code)
+    return new_code
 
 # Function to process each test and generate files and CSV entries
 def process_tests(input_file, csv_file):
@@ -55,6 +83,17 @@ def process_tests(input_file, csv_file):
                 test_name = test_name_match.group(1)
                 input_code = raw_strings[0].strip()  # Remove leading and trailing whitespace
                 output_code = raw_strings[1].strip()  # Remove leading and trailing whitespace
+
+                # For the input and output code, remove comments from the first
+                # line
+                input_code = remove_first_line_comment(input_code)
+                output_code = remove_first_line_comment(output_code)
+
+                input_code = replace_core_with_std(input_code)
+                output_code = replace_core_with_std(output_code)
+
+                input_code = input_code.strip()
+                output_code = output_code.strip()
 
                 # Find cursor positions in the input code
                 input_cursor_1 = find_cursor_position(input_code)
@@ -87,19 +126,6 @@ df = df.sort_values(by='Test name')
 df.to_csv(csv_file, index=False)
 print(f"CSV file sorted alphabetically by test name.")
 
-# Go through every file in input and expected_output, and remove the first line,
-# if it begins with // (since it's a comment)
-
-affected_files = []
-
-for directory in [input_dir, output_dir]:
-    for filename in os.listdir(directory):
-        with open(os.path.join(directory, filename), 'r') as file:
-            lines = file.readlines()
-            if lines[0].startswith('//'):
-                affected_files.append(os.path.join(directory, filename))
-                with open(os.path.join(directory, filename), 'w') as file:
-                    file.writelines(lines[1:])
-print("Removed comments from the first line of each file in the input and output directories.")
+print("Made alterations to the following files:")
 for file in affected_files:
     print(f"\t- {file}")

@@ -16,6 +16,7 @@ pub enum ExtractionError {
     NoAvailableAssist,
     NoExtractFunction(Vec<Assist>),
     ControlFlowFixupFailed(AbsPathBuf),
+    BlankTypeFixupFailed(AbsPathBuf),
 }
 
 impl fmt::Display for ExtractionError {
@@ -31,6 +32,7 @@ impl fmt::Display for ExtractionError {
             ExtractionError::NoAvailableAssist => write!(f, "No Available Assists found for the given selection"),
             ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists),
             ExtractionError::ControlFlowFixupFailed(path) => write!(f, "Control Flow Fixup failed for file {:?}", path),
+            ExtractionError::BlankTypeFixupFailed(path) => write!(f, "Blank Type Fixup failed for file {:?}", path),
         }
     }
 }

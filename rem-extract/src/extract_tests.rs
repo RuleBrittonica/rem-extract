@@ -3,6 +3,7 @@ use std::{
     time::Instant,
     time::Duration,
     path::PathBuf,
+    process::Command,
 };
 use syn::{
     parse_file,
@@ -304,9 +305,14 @@ pub fn test_verbose() {
 
     let allowed_tests: Vec<&'static str> = vec![
         // "break_loop_nested",
+        // "comments_in_block_expr",
+
     ];
 
     for (index, test_file) in TEST_FILES.iter().enumerate() {
+
+        // Take a snapshot of all files in the environment
+        let snapshot = fs::read_dir("./").unwrap().map(|entry| entry.unwrap().path()).collect::<Vec<PathBuf>>();
 
         let test_start_time: Instant = Instant::now();
 
@@ -361,6 +367,7 @@ pub fn test_verbose() {
         let test_name: &str = test_file.input_file.trim_end_matches(".rs");
         let mut extraction_status: String = "FAILED".red().to_string();
         let mut comparison_status: String = "N/A".cyan().to_string(); // Default to not applicable
+        let mut compilation_status: String = "N/A".magenta().to_string(); // Default to not applicable
 
         if extraction_result.is_ok() {
             extraction_status = "PASSED".green().to_string();
@@ -382,25 +389,307 @@ pub fn test_verbose() {
                     failed_tests += 1;
                 }
             }
+
+            // Complilation check using rustc
+            let compile_result = Command::new("rustc")
+                .arg(&output_path)
+                .output();
+
+            match compile_result {
+                Ok(output) => {
+                    if output.status.success() {
+                        compilation_status = "PASSED".green().to_string();
+                    } else {
+                        compilation_status = "FAILED".red().to_string();
+                        // failed_tests += 1;
+                    }
+                }
+                Err(e) => {
+                    compilation_status = format!("Error: {}", e).red().to_string();
+                    // failed_tests += 1;
+                }
+            }
+
         } else if let Err(e) = extraction_result {
             extraction_status = format!("FAILED: {}", e).red().to_string();
             failed_tests += 1;
         }
 
-        println!("Test {} | {} | {}: {} in {}", index + 1, extraction_status, comparison_status, test_name, test_elapsed_time_str);
-        // Strip ANSI color codes before logging
+        println!(
+            "Test {} | {} | {} | {}: {} in {}",
+            index + 1,
+            extraction_status,
+            comparison_status,
+            compilation_status,
+            test_name,
+            test_elapsed_time_str
+        );
+
         let clean_extraction_status = strip_ansi_codes(&extraction_status);
         let clean_comparison_status = strip_ansi_codes(&comparison_status);
+        let clean_compilation_status = strip_ansi_codes(&compilation_status);
 
-        info!("Test {} | {} | {}: {} in {}", index + 1, clean_extraction_status, clean_comparison_status, test_name, test_elapsed_time_str);
-
+        info!(
+            "Test {} | {} | {} | {}: {} in {}",
+            index + 1,
+            clean_extraction_status,
+            clean_comparison_status,
+            clean_compilation_status,
+            test_name,
+            test_elapsed_time_str
+        );
         // Print differences if the test failed
-        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" {
+        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" || clean_compilation_status == "FAILED" {
             println!("==================================================================");
-            println!("Differences found for test '{}':", test_name);
+            println!("Differences or compilation errors found for test '{}':", test_name);
             print_file_diff(&expected_file_path, &output_path).unwrap();
             println!("==================================================================");
             println!("");
+        }
+
+        // Delete all files created by the test (i.e anything not in the
+        // snapshot)
+        let current_files = fs::read_dir("./").unwrap().map(|entry| entry.unwrap().path()).collect::<Vec<PathBuf>>();
+        for file in current_files {
+            if !snapshot.contains(&file) {
+                fs::remove_file(file).unwrap();
+            }
+        }
+    }
+
+    // Total elapsed time
+    let total_elapsed_time: Duration = overall_start_time.elapsed();
+    let total_elapsed_time_secs: f64 = total_elapsed_time.as_secs_f64();
+    let total_elapsed_time_str: String = if total_elapsed_time_secs < 1.0 {
+        format!("{:.2}ms", total_elapsed_time_secs * 1000.0)
+    } else {
+        format!("{:.2}s", total_elapsed_time_secs)
+    };
+
+    // Calculate average time per test
+    let average_time_per_test: f64 = if total_tests > 0 {
+        total_test_time.as_secs_f64() / total_tests as f64
+    } else {
+        0.0
+    };
+
+    let average_time_str: String = if average_time_per_test < 1.0 {
+        format!("{:.2}ms", average_time_per_test * 1000.0)
+    } else {
+        format!("{:.2}s", average_time_per_test)
+    };
+
+    // Print overall statistics
+    println!("------------------------------------------------------------------");
+    println!("Total tests run: {}", total_tests);
+    println!("Tests passed stage 1: {}", passed_stage_1);
+    println!("Tests passed: {}", passed_tests);
+    println!("Tests failed: {}", failed_tests);
+    println!("Total time: {}", total_elapsed_time_str);
+    println!("Average time per test: {}", average_time_str);
+
+    // Log overall statistics
+    info!("------------------------------------------------------------------");
+    info!("Total tests run: {}", total_tests);
+    info!("Tests passed stage 1: {}", passed_stage_1);
+    info!("Tests passed: {}", passed_tests);
+    info!("Tests failed: {}", failed_tests);
+    info!("Total time: {}", total_elapsed_time_str);
+    info!("Average time per test: {}", average_time_str);
+
+    if let Some(min_time) = min_test_time {
+        let min_time_secs: f64 = min_time.as_secs_f64();
+        let min_time_str: String = if min_time_secs < 1.0 {
+            format!("{:.2}ms", min_time_secs * 1000.0)
+        } else {
+            format!("{:.2}s", min_time_secs)
+        };
+        println!("Shortest test time: {}", min_time_str);
+        info!("Shortest test time: {}", min_time_str);
+    }
+
+    if let Some(max_time) = max_test_time {
+        let max_time_secs: f64 = max_time.as_secs_f64();
+        let max_time_str: String = if max_time_secs < 1.0 {
+            format!("{:.2}ms", max_time_secs * 1000.0)
+        } else {
+            format!("{:.2}s", max_time_secs)
+        };
+        println!("Longest test time: {}", max_time_str);
+        info!("Longest test time: {}", max_time_str);
+    }
+}
+
+#[allow(dead_code)]
+pub fn test_spammy() {
+    // Clear the output directory before running tests
+    let output_dir = PathBuf::from("./output");
+    remove_all_files(&output_dir);
+
+    // Measure total time at the start
+    let overall_start_time: Instant = Instant::now();
+
+    info!("Starting tests...");
+
+    // Initialize counters and time trackers
+    let mut total_tests: i32 = 0;
+    let mut passed_stage_1: i32 = 0;
+    let mut passed_tests: i32 = 0;
+    let mut failed_tests: i32 = 0;
+    let mut total_test_time: Duration = Duration::new(0, 0);
+    let mut min_test_time: Option<Duration> = None;
+    let mut max_test_time: Option<Duration> = None;
+
+    let allowed_tests: Vec<&'static str> = vec![
+        // "break_loop_nested",
+        // "comments_in_block_expr",
+    ];
+
+    for (index, test_file) in TEST_FILES.iter().enumerate() {
+
+        // Take a snapshot of all files in the environment
+        let snapshot = fs::read_dir("./").unwrap().map(|entry| entry.unwrap().path()).collect::<Vec<PathBuf>>();
+
+        let test_start_time: Instant = Instant::now();
+
+        total_tests += 1;
+
+        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let output_path: String = input.output_path.clone();
+        let expected_file_path: String = PathBuf::new()
+            .join("correct_output")
+            .join(&test_file.input_file)
+            .with_extension("rs")
+            .to_string_lossy()
+            .to_string();
+
+        // Skip tests not in the allowed_tests list
+        // if the allowed_tests list is not empty
+        if !allowed_tests.is_empty() && !allowed_tests.contains(&test_file.input_file) {
+            continue;
+        }
+
+        // Call the extraction method and handle errors
+        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
+
+        // Measure time taken for extraction
+        let test_elapsed_time: Duration = test_start_time.elapsed();
+        total_test_time += test_elapsed_time;
+
+        // Update min and max times
+        if let Some(min_time) = min_test_time {
+            if test_elapsed_time < min_time {
+                min_test_time = Some(test_elapsed_time);
+            }
+        } else {
+            min_test_time = Some(test_elapsed_time);
+        }
+
+        if let Some(max_time) = max_test_time {
+            if test_elapsed_time > max_time {
+                max_test_time = Some(test_elapsed_time);
+            }
+        } else {
+            max_test_time = Some(test_elapsed_time);
+        }
+
+        let test_elapsed_time_secs: f64 = test_elapsed_time.as_secs_f64();
+        let test_elapsed_time_str: String = if test_elapsed_time_secs < 1.0 {
+            format!("{:.2}ms", test_elapsed_time_secs * 1000.0)
+        } else {
+            format!("{:.2}s", test_elapsed_time_secs)
+        };
+
+        let test_name: &str = test_file.input_file.trim_end_matches(".rs");
+        let mut extraction_status: String = "FAILED".red().to_string();
+        let mut comparison_status: String = "N/A".cyan().to_string(); // Default to not applicable
+        let mut compilation_status: String = "N/A".magenta().to_string(); // Default to not applicable
+
+        if extraction_result.is_ok() {
+            extraction_status = "PASSED".green().to_string();
+            passed_stage_1 += 1;
+
+            // Compare the output file with the expected file's AST
+            match parse_and_compare_ast(&output_path, &expected_file_path) {
+                Ok(is_identical) => {
+                    if is_identical {
+                        comparison_status = "PASSED".green().to_string();
+                        passed_tests += 1;
+                    } else {
+                        comparison_status = "FAILED".red().to_string();
+                        failed_tests += 1;
+                    }
+                }
+                Err(e) => {
+                    comparison_status = format!("Error: {}", e).red().to_string();
+                    failed_tests += 1;
+                }
+            }
+
+            // Complilation check using rustc
+            let compile_result = Command::new("rustc")
+                .arg(&output_path)
+                .output();
+
+            match compile_result {
+                Ok(output) => {
+                    if output.status.success() {
+                        compilation_status = "PASSED".green().to_string();
+                    } else {
+                        compilation_status = format!("FAILED: {}", String::from_utf8_lossy(&output.stderr)).red().to_string();
+                        // failed_tests += 1;
+                    }
+                }
+                Err(e) => {
+                    compilation_status = format!("Error: {}", e).red().to_string();
+                    // failed_tests += 1;
+                }
+            }
+
+        } else if let Err(e) = extraction_result {
+            extraction_status = format!("FAILED: {}", e).red().to_string();
+            failed_tests += 1;
+        }
+
+        println!(
+            "Test {} | {} | {} | {}: {} in {}",
+            index + 1,
+            extraction_status,
+            comparison_status,
+            compilation_status,
+            test_name,
+            test_elapsed_time_str
+        );
+
+        let clean_extraction_status = strip_ansi_codes(&extraction_status);
+        let clean_comparison_status = strip_ansi_codes(&comparison_status);
+        let clean_compilation_status = strip_ansi_codes(&compilation_status);
+
+        info!(
+            "Test {} | {} | {} | {}: {} in {}",
+            index + 1,
+            clean_extraction_status,
+            clean_comparison_status,
+            clean_compilation_status,
+            test_name,
+            test_elapsed_time_str
+        );
+        // Print differences if the test failed
+        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" || clean_compilation_status == "FAILED" {
+            println!("==================================================================");
+            println!("Differences or compilation errors found for test '{}':", test_name);
+            print_file_diff(&expected_file_path, &output_path).unwrap();
+            println!("==================================================================");
+            println!("");
+        }
+
+        // Delete all files created by the test (i.e anything not in the
+        // snapshot)
+        let current_files = fs::read_dir("./").unwrap().map(|entry| entry.unwrap().path()).collect::<Vec<PathBuf>>();
+        for file in current_files {
+            if !snapshot.contains(&file) {
+                fs::remove_file(file).unwrap();
+            }
         }
     }
 

@@ -1,9 +1,0 @@
-2024-10-02 17:51:19 [INFO] - Application Started
-2024-10-02 17:51:19 [INFO] - Running 'test' subcommand
-2024-10-02 17:51:19 [INFO] - Verbose: no
-2024-10-02 17:51:19 [INFO] - Starting tests...
-2024-10-02 17:51:19 [INFO] - Test 1 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr in 322.86ms
-2024-10-02 17:51:20 [INFO] - Test 2 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr_in_module in 295.85ms
-2024-10-02 17:51:20 [INFO] - Test 3 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_binary_expr_indented in 321.39ms
-2024-10-02 17:51:20 [INFO] - Test 4 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_with_last_expr in 315.86ms
-2024-10-02 17:51:21 [INFO] - Test 5 | FAILED: I/O error: The system cannot find the file specified. (os error 2) | N/A: no_args_from_stmt_unit in 295.58ms

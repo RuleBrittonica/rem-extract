@@ -28,7 +28,6 @@ use crate::{
         apply_extract_function,
         convert_to_abs_path_buf,
         filter_extract_function_assist,
-        fixup_controlflow,
         get_assists,
         get_cargo_config,
         get_cargo_toml,
@@ -37,6 +36,11 @@ use crate::{
         load_project_workspace,
         load_workspace_data,
         run_analysis,
+        fixup_blanktype,
+        fixup_controlflow,
+        fixup_outputfile,
+        fixup_double_semicolon,
+        fixup_doublespace,
     },
 };
 
@@ -197,7 +201,32 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
         &callee_name,
     );
 
-    fixup_controlflow( &output_abs_path )?;
+    // Open the output file and see what it contains
+    // TODO work out the other aspects that need to be fixed
+    let path: PathBuf = PathBuf::from( output_abs_path.as_str() );
+    let contents: String = fs::read_to_string( &path )?;
+    if contents.contains("ControlFlow::") {
+        let _ = fixup_controlflow( &output_abs_path )?;
+    }
+    if contents.contains("-> _") || contents.contains("->_") {
+        let _ = fixup_blanktype( &output_abs_path, &callee_name )?;
+    }
+    if contents.contains(";;") {
+        let _ = fixup_double_semicolon( &output_abs_path )?;
+    }
+    if contents.contains(")  {") {
+        let _ = fixup_doublespace( &output_abs_path )?;
+    }
+
+    // TODO Create an analysis on just the output file
+    // Use it to fix up things like missing `;`, imports, etc
+    // Also use it to remove functions in braces that don't need to be in
+    // braces.
+
+    // TODO Maybe attempt to compile the file to verify this?
+    // May just be faster to run the analysis on the file
+
+    // let _ = fixup_outputfile( &output_abs_path )?;
 
     Ok( PathBuf::from(output_abs_path.as_str()) )
 }

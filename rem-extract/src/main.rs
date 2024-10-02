@@ -24,6 +24,7 @@ mod test_details;
 use extract_tests::{
     test,
     test_verbose,
+    test_spammy,
 };
 
 mod error;
@@ -64,14 +65,21 @@ fn main() {
             let _modified_code = extract_method(input);
         }
 
-        EXTRACTCommands::Test { verbose } => {
+        EXTRACTCommands::Test {
+            verbose,
+            spammy
+        } => {
+            assert_ne!(verbose.clone(), spammy.clone(), "Verbose and Spammy cannot be run at the same time");
             info!("Running 'test' subcommand");
             info!("Verbose: {}", if *verbose { "yes" } else { "no" });
             if *verbose {
                 test_verbose();
-            } else {
+            } else if *spammy {
+                test_spammy();
+            }else {
                 test();
             }
+
         }
 
     }
