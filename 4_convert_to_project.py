@@ -33,10 +33,11 @@ for filename in os.listdir(input_directory):
             ['cargo', 'new', '--bin', project_name],
             cwd=input_directory,
             capture_output=True,
-            text=True
+            text=True,
+            env=dict(CARGO_TERM_COLOR='always')  # Ensure Cargo uses color
         )
 
-        # Filter out tje see more line
+        # Filter out te see more line
         filtered_stdout = "\n".join(
             line for line in result.stdout.splitlines()
             if "see more `Cargo.toml` keys and their definitions" not in line
@@ -74,8 +75,9 @@ for filename in os.listdir(input_directory):
         # Delete the original .rs file
         os.remove(original_rs_path)
 
-        print(f"Created project '{project_name}' in '{input_directory}' and deleted original file '{filename}'")
-
+        # Color the output - project name in green, input directory in blue,
+        # deleted file in orange
+        print(f"\tProject \033[92m{project_name}\033[0m created in \033[94m{input_directory}\033[0m, \033[93m{filename}\033[0m deleted")
 # For every project in the input directory, go to the main.rs file and add a
 # main function at the end of the file (this main function does nothing, but it
 # satisfies the Rust compiler)

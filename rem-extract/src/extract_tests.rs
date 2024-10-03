@@ -439,7 +439,7 @@ pub fn test_verbose() {
             test_elapsed_time_str
         );
         // Print differences if the test failed
-        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" || clean_compilation_status == "FAILED" {
+        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" {
             println!("==================================================================");
             println!("Differences or compilation errors found for test '{}':", test_name);
             print_file_diff(&expected_file_path, &output_path).unwrap();
@@ -675,7 +675,7 @@ pub fn test_spammy() {
             test_elapsed_time_str
         );
         // Print differences if the test failed
-        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" || clean_compilation_status == "FAILED" {
+        if clean_comparison_status == "FAILED" || clean_extraction_status == "FAILED" {
             println!("==================================================================");
             println!("Differences or compilation errors found for test '{}':", test_name);
             print_file_diff(&expected_file_path, &output_path).unwrap();

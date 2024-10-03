@@ -2,6 +2,14 @@ import os
 import re
 import csv
 
+# Print these out to the console, using red text and a bold font
+if os.name == 'nt':
+    print("\033[1;31;40mDetected running on windows. Assuming CRLF line endings.\033[0m")
+    LINE_END = 2
+else:
+    print("\033[1;31;40mDetected running on unix. Assuming LF line endings.\033[0m")
+    LINE_END = 1
+
 # Input test file containing the unit tests
 input_file = '0_extract_tests.rs'  # Replace with your actual input file
 
@@ -20,8 +28,26 @@ raw_string_pattern = re.compile(r'r#"(.*?)"#', re.DOTALL)
 
 # Function to find cursor positions ($0) in the code
 def find_cursor_position(code):
-    cursor_index = code.find('$0')
-    return cursor_index
+    cursor = '$'
+    counter = 0
+    index = 0
+    # Split the file by newlines
+    lines = code.split('\n')
+    # if the line doesn't contain a $ symbol, add its length to the counter
+    for idx, line in enumerate(lines):
+        # break out if the line has a $ sign in it
+        if cursor in line:
+            index = idx
+            break
+        counter += len(line)
+        counter += LINE_END # Account for the CR + LF?
+
+    final_line = lines[index]
+    # Split the final line by the $, count the part up to it
+    parts = final_line.split(cursor)
+    counter += len(parts[0])
+
+    return counter
 
 affected_files = []
 
@@ -32,11 +58,20 @@ affected_files = []
 #     foo($01 + 1$0);
 # }
 # We would return 5 (len(" + 1") = 5)
+# This method also needs to be aware of the CR + LF line endings
 def distance_between_cursors(code):
-    cursor_indices = [m.start() for m in re.finditer(r'\$0', code)]
-    if len(cursor_indices) < 2:
-        return 0
-    return cursor_indices[1] - cursor_indices[0] - 2  # Subtract 2 to account for the $0 characters
+    counter = 0
+    # Split the code by the $0
+    cursor = '$0'
+    new_code = code.split(cursor)[1]
+    # Split the code by the \n
+    lines = new_code.split('\n')
+    for line in lines:
+        # If the line contains a $ sign, break out
+        counter += len(line)
+        counter += LINE_END
+    return counter - LINE_END # Don't add CRLF for the last line
+
 
 # Function to remove comments from the first line of the code
 # E.g., for the code:
