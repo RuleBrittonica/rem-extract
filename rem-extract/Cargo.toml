@@ -33,6 +33,9 @@ ra_ap_load-cargo = "0.0.237"
 ra_ap_project_model = "0.0.237"
 ra_ap_rust-analyzer = "0.0.237"
 ra_ap_vfs = "0.0.237"
+ra_ap_parser = "0.0.237"
+ra_ap_syntax = "0.0.237"
+rowan = "0.15.15"
 
 [build-dependencies]
 

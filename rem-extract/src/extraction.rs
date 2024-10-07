@@ -7,6 +7,7 @@ use std::{
     path::PathBuf
 };
 
+use ra_ap_ide_db::EditionedFileId;
 use ra_ap_project_model::{
     CargoConfig,
     ProjectWorkspace,
@@ -17,6 +18,8 @@ use ra_ap_ide::{
     Analysis,
     AnalysisHost,
 };
+
+use ra_ap_hir::Semantics;
 
 use ra_ap_ide_assists::Assist;
 
@@ -36,11 +39,10 @@ use crate::{
         load_project_workspace,
         load_workspace_data,
         run_analysis,
-        fixup_blanktype,
-        fixup_controlflow,
-        fixup_outputfile,
-        fixup_double_semicolon,
-        fixup_doublespace,
+        check_braces,
+        check_comment,
+        trim_range,
+        generate_frange,
     },
 };
 
@@ -177,18 +179,30 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
     // println!("Project Workspace {:?}", workspace);
 
     let (db, vfs) = load_workspace_data(workspace, &cargo_config);
-    // println!("Database {:?}", db);
-    // println!("VFS {:?}", vfs);
+
+    // Parse the cursor positions into the range
+    let range_: (u32, u32) = (
+        start_idx,
+        end_idx,
+    );
+
+    // Before we go too far, lets do few more quick checks now that we have the
+    // analysis
+    // 1. Check if the function to extract is not just a comment
+    // 2. Check if the function to extract has matching braces
+    // 3. Convert the range to a trimmed range.
+    // TODO
+    let sema: Semantics<'_, ra_ap_ide::RootDatabase> = Semantics::new( &db );
+    let frange_ = generate_frange( &input_abs_path, &vfs, range_.clone() );
+    let edition = EditionedFileId::current_edition( frange_.file_id );
+    let source_file = sema.parse( edition );
+    let range: (u32, u32) = trim_range( &source_file, &range_ );
+    check_comment( &source_file, &range )?;
+    check_braces( &source_file, &range )?;
 
     let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
     let analysis: Analysis = run_analysis( analysis_host );
     // println!("Analysis {:?}", analysis);
-
-    // Parse the cursor positions into the range
-    let range: (u32, u32) = (
-        start_idx,
-        end_idx,
-    );
 
     let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
     let assist: Assist = filter_extract_function_assist(assists)?;
@@ -200,33 +214,6 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
         &vfs,
         &callee_name,
     );
-
-    // Open the output file and see what it contains
-    // TODO work out the other aspects that need to be fixed
-    let path: PathBuf = PathBuf::from( output_abs_path.as_str() );
-    let contents: String = fs::read_to_string( &path )?;
-    if contents.contains("ControlFlow::") {
-        let _ = fixup_controlflow( &output_abs_path )?;
-    }
-    if contents.contains("-> _") || contents.contains("->_") {
-        let _ = fixup_blanktype( &output_abs_path, &callee_name )?;
-    }
-    if contents.contains(";;") {
-        let _ = fixup_double_semicolon( &output_abs_path )?;
-    }
-    if contents.contains(")  ") {
-        let _ = fixup_doublespace( &output_abs_path )?;
-    }
-
-    // TODO Create an analysis on just the output file
-    // Use it to fix up things like missing `;`, imports, etc
-    // Also use it to remove functions in braces that don't need to be in
-    // braces.
-
-    // TODO Maybe attempt to compile the file to verify this?
-    // May just be faster to run the analysis on the file
-
-    // let _ = fixup_outputfile( &output_abs_path )?;
 
     Ok( PathBuf::from(output_abs_path.as_str()) )
 }

@@ -2,7 +2,7 @@ use std::fmt;
 use std::io;
 use syn::Error as SynError;
 use ra_ap_ide_assists::Assist;
-use ra_ap_vfs::AbsPathBuf;
+use ra_ap_vfs::VfsPath;
 
 #[derive(Debug)]
 pub enum ExtractionError {
@@ -14,8 +14,10 @@ pub enum ExtractionError {
     SameIdx,
     InvalidIdxPair,
     NoExtractFunction(Vec<Assist>),
-    ControlFlowFixupFailed(AbsPathBuf),
-    BlankTypeFixupFailed(AbsPathBuf),
+    ControlFlowFixupFailed(VfsPath),
+    CommentNotApplicable,
+    BracesNotApplicable,
+
 }
 
 impl fmt::Display for ExtractionError {
@@ -30,7 +32,8 @@ impl fmt::Display for ExtractionError {
             ExtractionError::InvalidIdxPair => write!(f, "Invalid pair of start and end indices"),
             ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists),
             ExtractionError::ControlFlowFixupFailed(path) => write!(f, "Control Flow Fixup failed for file {:?}", path),
-            ExtractionError::BlankTypeFixupFailed(path) => write!(f, "Blank Type Fixup failed for file {:?}", path),
+            ExtractionError::CommentNotApplicable => write!(f, "Extraction not applicable for comment"),
+            ExtractionError::BracesNotApplicable => write!(f, "Extraction not applicable for braces"),
         }
     }
 }

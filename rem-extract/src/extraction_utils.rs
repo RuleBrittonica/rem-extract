@@ -60,13 +60,23 @@ use ra_ap_load_cargo::{
     load_workspace,
 };
 
+use ra_ap_parser::{
+    T,
+    SyntaxKind::COMMENT,
+};
+
+use ra_ap_syntax::{
+    algo,
+    AstNode,
+    SourceFile
+};
 
 
 /// Returns the path to the manifest directory of the given file
 /// The manifest directory is the directory containing the Cargo.toml file
 /// for the project.
 ///
-/// ### Example
+/// ## Example
 /// Given a directory structure like:
 /// ```plaintext
 /// /path/to/project
@@ -231,6 +241,18 @@ pub fn run_analysis( host: AnalysisHost ) -> Analysis {
     analysis
 }
 
+/// Verifies the input selection for extraction.
+/// # Input
+/// - analysis: The `&Analysis` object containing the analysis data
+/// - vfs: The `&Vfs` object containing the virtual file system data
+/// - input_path: The `&AbsPathBuf` to the input file
+/// - range: The tuple of start and end offsets for the selection
+///
+/// # Returns
+/// - Ok(()) if the input is valid
+/// - Err(ExtractioError::CommentNotApplicable) if the selection is a comment
+/// - Err(ExtractioError::BracesNotApplicable) if the selection is braces
+
 /// Gets a list of available assists for a given file and range
 pub fn get_assists (
     analysis: &Analysis,
@@ -239,7 +261,24 @@ pub fn get_assists (
     range: (u32, u32), // Tuple of start and end offsets
 ) -> Vec<Assist> {
 
-    // Build out the AssistConfig
+    let assist_config: AssistConfig = generate_assist_config();
+    let diagnostics_config: DiagnosticsConfig = generate_diagnostics_config();
+    let resolve: AssistResolveStrategy = generate_resolve_strategy();
+    let frange: FileRange = generate_frange(input_path, vfs, range);
+
+    // Call the assists_with_fixes method
+    let assists: Vec<Assist> = analysis.assists_with_fixes(
+        &assist_config,
+        &diagnostics_config,
+        resolve,
+        frange
+    ).unwrap();
+
+    assists
+}
+
+// Build out the AssistConfig Object
+fn generate_assist_config() -> AssistConfig {
     let snippet_cap_: Option<SnippetCap> = None;
     let allowed_assists: Vec<AssistKind> = vec![
         // AssistKind::QuickFix,
@@ -269,20 +308,32 @@ pub fn get_assists (
         term_search_fuel: 2048, // * NFI what this is
         term_search_borrowck: false,
     };
+    assist_config
+}
 
-    // Build out the DiagnosticsConfig
-    let diagnostics_config: DiagnosticsConfig = DiagnosticsConfig::test_sample(); // TODO This may need to be specific to the program
+// Build out the DiagnosticsConfig
+fn generate_diagnostics_config() -> DiagnosticsConfig {
+    DiagnosticsConfig::test_sample()
+}
 
-    // Build out the ResolveStrategy
+// Build out the ResolveStrategy
+fn generate_resolve_strategy() -> AssistResolveStrategy {
     // FIXME: This is currently bugged it seems - Both extract_variable and extract_function are being returned
-    let resolve: AssistResolveStrategy = AssistResolveStrategy::Single(
-        SingleResolve {
-            assist_id: "extract_function".to_string(),
-            assist_kind: AssistKind::RefactorExtract,
-        }
-    );
+    let single_resolve: SingleResolve = SingleResolve {
+        assist_id: "extract_function".to_string(),
+        assist_kind: AssistKind::RefactorExtract,
+    };
 
-    // Build out the FileRange
+    let resolve_strategy: AssistResolveStrategy = AssistResolveStrategy::Single(single_resolve);
+    resolve_strategy
+}
+
+// Build out the FileRange object
+pub fn generate_frange(
+    input_path: &AbsPathBuf,
+    vfs: &Vfs,
+    range: (u32, u32)
+) -> FileRange {
     let vfs_path: VfsPath = VfsPath::new_real_path(
         input_path
             .as_str()
@@ -299,16 +350,7 @@ pub fn get_assists (
         file_id: file_id_,
         range: range_,
     };
-
-    // Call the assists_with_fixes method
-    let assists: Vec<Assist> = analysis.assists_with_fixes(
-        &assist_config,
-        &diagnostics_config,
-        resolve,
-        frange
-    ).unwrap();
-
-    assists
+    frange
 }
 
 /// Filter the list of assists to only be the extract_function assist
@@ -381,6 +423,9 @@ pub fn apply_extract_function(
         callee_name,
     );
 
+    // Ensure that the output file imports std::ops::ControlFlow if it uses it
+    let _ = fixup_controlflow( &vfs_out_path ).unwrap();
+
     // Return the output file path
     PathBuf::from( vfs_out_path.to_string() )
 }
@@ -433,7 +478,88 @@ fn copy_file_vfs(
     // Copy the file
     let from: PathBuf = vfs_to_pathbuf( source );
     let to: PathBuf = vfs_to_pathbuf( destination );
-    let _ = std::fs::copy(from, to).unwrap();
+    let _ = std::fs::copy( from, to ).unwrap();
+}
+
+/// Checks that there is some input to the function that isn't a comment
+/// # Returns
+/// - `Ok(())` if the input is not a comment
+/// - `Err(ExtractionError::CommentNotApplicable)` if the input is a comment
+pub fn check_comment(
+    source_file: &SourceFile,
+    range: &(u32, u32)
+) -> Result<(), ExtractionError> {
+    let frange: TextRange = TextRange::new(
+        TextSize::new(range.0),
+        TextSize::new(range.1),
+    );
+    let node = source_file
+        .syntax()
+        .covering_element(frange);
+
+    if node.kind() == COMMENT {
+        return Err(ExtractionError::CommentNotApplicable);
+    }
+
+    Ok(())
+}
+
+/// Checks that there is some input to the function that isn't a brace
+/// For every:
+/// - { there is a }
+/// - [ there is a ]
+/// - ( there is a )
+/// # Returns
+/// - `Ok(())` if the input is not a brace
+/// - `Err(ExtractionError::BracesNotApplicable)` if the input is a brace
+pub fn check_braces(
+    source_file: &SourceFile,
+    range: &(u32, u32)
+) -> Result<(), ExtractionError> {
+    let frange: TextRange = TextRange::new(
+        TextSize::new(range.0),
+        TextSize::new(range.1),
+    );
+    let node = source_file
+        .syntax()
+        .covering_element(frange);
+
+    if matches!(node.kind(), T!['{'] | T!['}'] | T!['('] | T![')'] | T!['['] | T![']']) {
+        return Err(ExtractionError::BracesNotApplicable);
+    }
+
+    Ok(())
+
+}
+
+/// Trims the selected range to remove any whitespace
+pub fn trim_range(
+    source_file: &SourceFile,
+    range: &(u32, u32)
+) -> (u32, u32) {
+    let start = TextSize::new(range.0);
+    let end = TextSize::new(range.1);
+    let left = source_file
+        .syntax()
+        .token_at_offset( start )
+        .right_biased()
+        .and_then(|t| algo::skip_whitespace_token(t, rowan::Direction::Next))
+        .map(|t| t.text_range().start().clamp(start, end));
+    let right = source_file
+        .syntax()
+        .token_at_offset( end )
+        .left_biased()
+        .and_then(|t| algo::skip_whitespace_token(t, rowan::Direction::Prev))
+        .map(|t| t.text_range().end().clamp(start, end));
+
+    let trimmed_range = match (left, right) {
+        (Some(left), Some(right)) if left <= right => TextRange::new(left, right),
+        // Selection solely consists of whitespace so just fall back to the original
+        _ => TextRange::new(start, end),
+    };
+
+    ( trimmed_range.start().into(), trimmed_range.end().into() )
+
 }
 
 /// Checks if a file contains a reference to ControlFlow::, and if so, adds  use
@@ -441,9 +567,9 @@ fn copy_file_vfs(
 /// Returns the path if successful, or ExtractionError::ControlFlowFixupFailed
 /// if it failed
 /// If no references to ControlFlow:: are found, the file is left unchanged
-pub fn fixup_controlflow(
-    output_path: &AbsPathBuf,
-) -> Result<&AbsPathBuf, ExtractionError> {
+fn fixup_controlflow(
+    output_path: &VfsPath,
+) -> Result<&VfsPath, ExtractionError> {
     let path: PathBuf = PathBuf::from( output_path.to_string() );
     let mut text: String = fs::read_to_string( &path ).unwrap();
     let controlflow_ref: &str = "ControlFlow::";
@@ -457,201 +583,6 @@ pub fn fixup_controlflow(
     } else {
         Ok( output_path )
     }
-}
-
-/// Removes any references to `-> _ ` created by the extraction process
-/// Only effects the instance of `-> _ ` that is on the same line as the
-/// extracted function (i.e. the second reference to callee_name in the file)
-/// Returns the path if successful, or ExtractionError::BlankTypeFixupFailed if
-/// not
-pub fn fixup_blanktype<'a>(
-    output_path: &'a AbsPathBuf,
-    callee_name: &'a str,
-) -> Result<&'a AbsPathBuf, ExtractionError> {
-    let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let mut text: String = fs::read_to_string( &path ).unwrap();
-    // Search for the second occurrence of callee_name
-    let occurrences = text
-        .match_indices( callee_name )
-        .collect::<Vec<_>>();
-    // Check if there are at least two occurrences of callee_name
-    if occurrences.len() < 2 {
-        return Err(ExtractionError::BlankTypeFixupFailed( output_path.clone() ));
-    }
-
-    // Get the position of the second occurrence
-    let second_occurrence_pos = occurrences[1].0;
-
-    // Search for `-> _ ` starting after the second occurrence
-    if let Some(index) = text[second_occurrence_pos..].find(" -> _ ") {
-        let replacement_start: usize = second_occurrence_pos + index;
-
-        // Replace `-> _` with " "
-        text.replace_range(replacement_start..(replacement_start + 5), " ");
-
-        // Write the modified content back to the file
-        let write_result = fs::write(&path, text);
-        match write_result {
-            Ok(_) => Ok( output_path ),
-            Err(_) => Err(ExtractionError::BlankTypeFixupFailed( output_path.clone() )),
-        }
-    } else {
-        Ok( output_path )
-    }
-}
-
-pub fn fixup_double_semicolon(
-    output_path: &AbsPathBuf,
-) -> Result<&AbsPathBuf, ExtractionError> {
-    let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let mut text: String = fs::read_to_string( &path ).unwrap();
-    let double_semicolon: &str = ";;";
-    if text.contains( double_semicolon ) {
-        text = text.replace( double_semicolon, ";" );
-        let write_result = fs::write( &path, text );
-        match write_result {
-            Ok(_) => Ok( output_path ),
-            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
-        }
-    } else {
-        Ok( output_path )
-    }
-}
-
-pub fn fixup_doublespace(
-    output_path: &AbsPathBuf,
-) -> Result<&AbsPathBuf, ExtractionError> {
-    let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let mut text: String = fs::read_to_string( &path ).unwrap();
-    let double_space: &str = ")  ";
-    if text.contains( double_space ) {
-        text = text.replace( double_space, ") " );
-        let write_result = fs::write( &path, text );
-        match write_result {
-            Ok(_) => Ok( output_path ),
-            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
-        }
-    } else {
-        Ok( output_path )
-    }
-}
-
-
-/// Creates an analysis of just the output file, and uses that to fix up the
-/// issues with missing `;`, imports, etc.
-/// Also uses it to remove functions in braces that don't need to be in braces.
-pub fn fixup_outputfile(
-    output_path: &AbsPathBuf,
-) -> Result<&AbsPathBuf, ExtractionError> {
-    let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let text: String = fs::read_to_string( &path ).unwrap();
-    let len:u32 = text.len().try_into().unwrap();
-
-    let (analysis, id) = Analysis::from_single_file( text );
-    let assists: Vec<Assist> = get_all_assists( &analysis, id, len );
-
-    let allowed_assists: Vec<&str> = vec![
-        "Unnecessary braces in use statement",
-        "auto_import"
-    ];
-
-    // Filter out the assists that are not in the allowed list, by checking if
-    // the assist.label is in the allowed_assists list. Due to the impl of
-    // Label, we must filter using == (or some other PartialEq)
-    let filtered_assists: Vec<Assist> = assists.clone()
-        .into_iter()
-        .filter(|assist| allowed_assists
-                .iter()
-                .any(|&allowed| assist.label == allowed)
-        )
-        .collect();
-
-    let unallowed_assists: Vec<&str> = vec![
-        "unscore_unused_variable_name",
-        "change_visibility",
-        "extract_variable",
-        "extract_module",
-    ];
-
-    // Remove any assists from assists that are in unallowed_assists
-    let filtered_assists: Vec<Assist> = assists.clone()
-        .into_iter()
-        .filter(|assist| unallowed_assists
-                .iter()
-                .all(|&unallowed| assist.label != unallowed)
-        )
-        .collect();
-
-    // Print out any assists that are not in filtered_assists
-    for assist in filtered_assists {
-        println!("{:?}", assist);
-    }
-
-    Ok( output_path )
-}
-
-fn get_all_assists(
-    analysis: &Analysis,
-    file_id: FileId,
-    len: u32,
-) -> Vec<Assist> {
-        // Build out the AssistConfig
-    let snippet_cap_: Option<SnippetCap> = None;
-    let allowed_assists: Vec<AssistKind> = vec![
-        AssistKind::QuickFix,
-        AssistKind::Refactor,
-        AssistKind::RefactorInline,
-        AssistKind::RefactorRewrite,
-        AssistKind::Generate,
-        AssistKind::RefactorExtract,
-    ];
-
-    let insert_use_: InsertUseConfig = InsertUseConfig {
-        granularity: ImportGranularity::Preserve,
-        enforce_granularity: false,
-        prefix_kind: PrefixKind::ByCrate,
-        group: false,
-        skip_glob_imports: false,
-    };
-
-    let assist_config: AssistConfig = AssistConfig {
-        snippet_cap: snippet_cap_,
-        allowed: None, //Some(allowed_assists),
-        insert_use: insert_use_,
-        prefer_no_std: false,
-        prefer_prelude: false,
-        prefer_absolute: false,
-        assist_emit_must_use: false,
-        term_search_fuel: 2048, // * NFI what this is
-        term_search_borrowck: false,
-    };
-
-    // Build out the DiagnosticsConfig
-    let diagnostics_config: DiagnosticsConfig = DiagnosticsConfig::test_sample(); // TODO This may need to be specific to the program
-
-    // Build out the ResolveStrategy
-    let resolve: AssistResolveStrategy = AssistResolveStrategy::All;
-
-    let range: TextRange = TextRange::new(
-        TextSize::try_from( 0 as u32 ).unwrap(),
-        // End of the file
-        TextSize::try_from( len ).unwrap(),
-    );
-
-    let frange: FileRange = FileRange {
-        file_id,
-        range,
-    };
-
-    // Call the assists_with_fixes method
-    let assists: Vec<Assist> = analysis.assists_with_fixes(
-        &assist_config,
-        &diagnostics_config,
-        resolve,
-        frange
-    ).unwrap();
-
-    assists
 }
 
 #[cfg(test)]

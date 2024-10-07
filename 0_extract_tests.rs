@@ -3827,7 +3827,7 @@ fn f() -> Option<()> {
             r#"
 fn f() -> Option<()> {
     if true {
-        let a = fun_name()?;;
+        let a = fun_name()?;
         Some(a)
     } else {
         None
