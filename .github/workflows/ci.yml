@@ -32,7 +32,7 @@ jobs:
       run: cargo build --verbose --bin rem-extract
 
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --package rem-extract
 
     # - name: Run Clippy
     #   run: cargo clippy -- -D warnings
