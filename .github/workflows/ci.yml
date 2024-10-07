@@ -29,7 +29,7 @@ jobs:
       run: rustup component add rust-src rustc-dev llvm-tools-preview
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --bin rem-extract
 
     - name: Run tests
       run: cargo test --verbose
