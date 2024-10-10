@@ -49,6 +49,7 @@ impl From<&TestFile<'_>> for ExtractionInput {
 
         let output_path: String = PathBuf::from("output")
             .join(&test_file.input_file)
+            .with_extension("rs")
             .to_string_lossy()
             .to_string();
 
