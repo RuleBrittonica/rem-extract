@@ -15,7 +15,7 @@ pub enum ExtractionError {
     NoExtractFunction(Vec<Assist>),
     CommentNotApplicable,
     BracesNotApplicable,
-
+    ParentMethodNotFound,
 }
 
 impl fmt::Display for ExtractionError {
@@ -31,6 +31,7 @@ impl fmt::Display for ExtractionError {
             ExtractionError::NoExtractFunction(assists) => write!(f, "No Extract Function Assist found for the given selection of assists {:?}", assists),
             ExtractionError::CommentNotApplicable => write!(f, "Extraction not applicable for comment"),
             ExtractionError::BracesNotApplicable => write!(f, "Extraction not applicable for braces"),
+            ExtractionError::ParentMethodNotFound => write!(f, "Parent method not found"),
         }
     }
 }

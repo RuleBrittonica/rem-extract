@@ -17,6 +17,11 @@ use ra_ap_project_model::{
 use ra_ap_ide::{
     Analysis,
     AnalysisHost,
+    TextSize,
+};
+
+use ra_ap_syntax::{
+    algo, ast::HasName, AstNode, SourceFile
 };
 
 use ra_ap_hir::Semantics;
@@ -127,8 +132,9 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 // ========================================
 
 /// Function to extract the code segment based on cursor positions
-/// If successful, returns the `String` of the output code
-pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
+/// If successful, returns the `String` of the output code, followed by a
+/// `String` of the caller method
+pub fn extract_method(input: ExtractionInput) -> Result<(String, String), ExtractionError> {
 
     // Extract the struct information
     let input_path: &str = &input.file_path;
@@ -173,7 +179,7 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     let sema: Semantics<'_, ra_ap_ide::RootDatabase> = Semantics::new( &db );
     let frange_: ra_ap_hir::FileRangeWrapper<ra_ap_vfs::FileId> = generate_frange( &input_abs_path, &vfs, range_.clone() );
     let edition: EditionedFileId = EditionedFileId::current_edition( frange_.file_id );
-    let source_file: ra_ap_syntax::SourceFile = sema.parse( edition );
+    let source_file: SourceFile = sema.parse( edition );
     let range: (u32, u32) = trim_range( &source_file, &range_ );
     check_comment( &source_file, &range )?;
     check_braces( &source_file, &range )?;
@@ -181,8 +187,9 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
     let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
     let analysis: Analysis = run_analysis( analysis_host );
 
-    let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
-    let assist: Assist = filter_extract_function_assist(assists)?;
+    let assists: Vec<Assist> = get_assists( &analysis, &vfs, &input_abs_path, range );
+    let assist: Assist = filter_extract_function_assist( assists )?;
+
 
     let modified_code: String = apply_extract_function(
         &assist,
@@ -191,5 +198,38 @@ pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError>
         &callee_name,
     )?;
 
-    Ok( modified_code )
+    let parent_method: String = parent_method(
+        &source_file,
+        range,
+    )?;
+    
+    Ok( (modified_code, parent_method) )
+}
+
+/// Gets the caller method, based on the input code and the cursor positions
+/// If successful, returns the `String` of the caller method
+/// If unsuccessful, returns an `ExtractionError`
+pub fn parent_method(
+    source_file: &SourceFile,
+    range: (u32, u32),
+) -> Result<String, ExtractionError> {
+    let start: TextSize = TextSize::new(range.0);
+
+    // We want the last function that occurs before the start of the range
+    let node: Option<ra_ap_syntax::ast::Fn> = algo::find_node_at_offset::<ra_ap_syntax::ast::Fn>(
+        source_file.syntax(),
+        start,
+    );
+
+    let fn_name: String = match node {
+        Some(n) => n.name().map_or("".to_string(), |name| name.text().to_string()),
+        None => "".to_string(),
+    };
+
+    if fn_name.is_empty() {
+        return Err(ExtractionError::ParentMethodNotFound);
+    }
+
+    Ok( fn_name.trim().to_string() )
+
 }

@@ -179,7 +179,7 @@ pub fn test() {
         let extraction_input: ExtractionInput = ExtractionInput::from(&input);
 
         // Call the extraction method and handle errors
-        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
+        let extraction_result: Result<(String, _), ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -217,7 +217,7 @@ pub fn test() {
             // Unwrap the result to get the output code (as we know that it is
             // successful)
             // Also write the output code to the output file for later viewing
-            let extraction_result: String = extraction_result.unwrap();
+            let (extraction_result, _)  = extraction_result.unwrap();
             fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;
@@ -368,7 +368,7 @@ pub fn test_verbose() {
         let extraction_input: ExtractionInput = ExtractionInput::from(&input);
 
         // Call the extraction method and handle errors
-        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
+        let extraction_result: Result<(String, _), ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -407,7 +407,7 @@ pub fn test_verbose() {
             // Unwrap the result to get the output code (as we know that it is
             // successful)
             // Also write the output code to the output file for later viewing
-            let extraction_result: String = extraction_result.unwrap();
+            let (extraction_result, _)  = extraction_result.unwrap();
             fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;
@@ -611,7 +611,7 @@ pub fn test_spammy() {
         let extraction_input: ExtractionInput = ExtractionInput::from(&input);
 
         // Call the extraction method and handle errors
-        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
+        let extraction_result: Result<(String, _), ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -650,7 +650,7 @@ pub fn test_spammy() {
             // Unwrap the result to get the output code (as we know that it is
             // successful)
             // Also write the output code to the output file for later viewing
-            let extraction_result: String = extraction_result.unwrap();
+            let (extraction_result, _)  = extraction_result.unwrap();
             fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;

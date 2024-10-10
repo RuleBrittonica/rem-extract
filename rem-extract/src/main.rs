@@ -67,7 +67,7 @@ fn main() {
             verbose,
             spammy
         } => {
-            assert_ne!(verbose.clone(), spammy.clone(), "Verbose and Spammy cannot be run at the same time");
+            if verbose.clone() || spammy.clone() {assert_ne!(verbose.clone(), spammy.clone(), "Verbose and Spammy cannot be run at the same time");}
             info!("Running 'test' subcommand");
             info!("Verbose: {}", if *verbose { "yes" } else { "no" });
             if *verbose {
