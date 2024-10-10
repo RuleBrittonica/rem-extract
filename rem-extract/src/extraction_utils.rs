@@ -637,6 +637,9 @@ mod tests {
     }
 
     #[test]
+    ///Only run this test on Windows as it tests Windows-specific paths
+    /// This test is skipped on other platforms
+    #[cfg(target_os = "windows")]
     fn test_absolute_path_windows() {
         // Test with an absolute path (Windows-style)
         let abs_path = r"C:\Windows\System32";
@@ -649,6 +652,9 @@ mod tests {
     }
 
     #[test]
+    ///Only run this test on Windows as it tests Windows-specific paths
+    /// This test is skipped on other platforms
+    #[cfg(target_os = "windows")]
     fn test_relative_path_windows() {
         // Test with a relative path (Windows-style)
         let rel_path = r"src\main.rs";
@@ -667,6 +673,9 @@ mod tests {
     }
 
     #[test]
+    ///Only run this test on Windows as it tests Windows-specific paths
+    /// This test is skipped on other platforms
+    #[cfg(target_os = "windows")]
     fn test_invalid_utf8_path_windows() {
         // Test with a path that cannot be converted to a valid UTF-8 path
         let invalid_utf8_path = r"C:\invalid\�path";
