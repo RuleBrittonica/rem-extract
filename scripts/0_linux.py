@@ -5,7 +5,6 @@
 # replaces any reference to python with python3
 
 import os
-import re
 
 for script in os.listdir('./scripts'):
     if script.endswith('.sh'):

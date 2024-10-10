@@ -37,9 +37,19 @@ impl TestFile<'_> {
     }
 }
 
+/// A TestInput needs a Path to write to, as part of the testing process is
+/// writing the output to a file. This is not needed for the actual extraction
+pub struct TestInput{
+    pub file_path: String,
+    pub output_path: String,
+    pub new_fn_name: String,
+    pub start_idx: u32,
+    pub end_idx: u32,
+}
+
 // Helper function to convert a TestFile into an ExtractionInput
-impl From<&TestFile<'_>> for ExtractionInput {
-    fn from(test_file: &TestFile<'_>) -> ExtractionInput {
+impl From<&TestFile<'_>> for TestInput {
+    fn from(test_file: &TestFile<'_>) -> TestInput {
         let file_path: String = PathBuf::from("input")
             .join(&test_file.input_file)
             .join("src")
@@ -53,12 +63,25 @@ impl From<&TestFile<'_>> for ExtractionInput {
             .to_string_lossy()
             .to_string();
 
-        ExtractionInput {
+        TestInput {
             file_path,
             output_path,
             new_fn_name: "fun_name".to_string(),
             start_idx: test_file.start_idx,
             end_idx: test_file.end_idx,
+        }
+    }
+}
+
+/// Because the TestInput contains an output path, it also needs to be converted
+/// into an ExtractionInput for the actual extraction process
+impl From<&TestInput> for ExtractionInput {
+    fn from(test_input: &TestInput) -> ExtractionInput {
+        ExtractionInput {
+            file_path: test_input.file_path.clone(),
+            new_fn_name: test_input.new_fn_name.clone(),
+            start_idx: test_input.start_idx,
+            end_idx: test_input.end_idx,
         }
     }
 }
@@ -70,14 +93,15 @@ fn strip_ansi_codes(s: &str) -> String {
 }
 
 #[allow(dead_code)]
-fn parse_and_compare_ast(output_file_path: &str, expected_file_path: &str) -> Result<bool, ExtractionError> {
-    let output_content: String = fs::read_to_string(output_file_path)?;
+fn parse_and_compare_ast(output_content: &String, expected_file_path: &str) -> Result<bool, ExtractionError> {
     let expected_content: String = fs::read_to_string(expected_file_path)?;
 
     let output_ast: File = parse_file(&output_content)?;
     let expected_ast: File = parse_file(&expected_content)?;
 
-    // Convert both ASTs back into token streams for comparison
+    // Convert both ASTs back into token stres for comparison
+    // FIXME this is sometimes buggy and is convinced that the two files are
+    // different when they are infact the same
     let output_tokens: String = output_ast.into_token_stream().to_string();
     let expected_tokens: String = expected_ast.into_token_stream().to_string();
 
@@ -143,7 +167,7 @@ pub fn test() {
 
         total_tests += 1;
 
-        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let input: TestInput = TestInput::from(test_file);
         let expected_file_path: String = PathBuf::new()
             .join("correct_output")
             .join(&test_file.input_file)
@@ -152,8 +176,10 @@ pub fn test() {
             .to_string();
         let output_path: String = input.output_path.clone();
 
+        let extraction_input: ExtractionInput = ExtractionInput::from(&input);
+
         // Call the extraction method and handle errors
-        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
+        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -188,11 +214,16 @@ pub fn test() {
         let mut comparison_status: String = "N/A".to_string(); // Default to not applicable
 
         if extraction_result.is_ok() {
+            // Unwrap the result to get the output code (as we know that it is
+            // successful)
+            // Also write the output code to the output file for later viewing
+            let extraction_result: String = extraction_result.unwrap();
+            fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;
 
             // Compare the output file with the expected file's AST
-            match parse_and_compare_ast(&output_path, &expected_file_path) {
+            match parse_and_compare_ast(&extraction_result, &expected_file_path) {
                 Ok(is_identical) => {
                     if is_identical {
                         comparison_status = "PASSED".green().to_string();
@@ -319,7 +350,7 @@ pub fn test_verbose() {
 
         total_tests += 1;
 
-        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let input: TestInput = TestInput::from(test_file);
         let output_path: String = input.output_path.clone();
         let expected_file_path: String = PathBuf::new()
             .join("correct_output")
@@ -334,8 +365,10 @@ pub fn test_verbose() {
             continue;
         }
 
+        let extraction_input: ExtractionInput = ExtractionInput::from(&input);
+
         // Call the extraction method and handle errors
-        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
+        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -371,11 +404,16 @@ pub fn test_verbose() {
         let mut compilation_status: String = "N/A".magenta().to_string(); // Default to not applicable
 
         if extraction_result.is_ok() {
+            // Unwrap the result to get the output code (as we know that it is
+            // successful)
+            // Also write the output code to the output file for later viewing
+            let extraction_result: String = extraction_result.unwrap();
+            fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;
 
             // Compare the output file with the expected file's AST
-            match parse_and_compare_ast(&output_path, &expected_file_path) {
+            match parse_and_compare_ast(&extraction_result, &expected_file_path) {
                 Ok(is_identical) => {
                     if is_identical {
                         comparison_status = "PASSED".green().to_string();
@@ -555,7 +593,7 @@ pub fn test_spammy() {
 
         total_tests += 1;
 
-        let input: ExtractionInput = ExtractionInput::from(test_file);
+        let input: TestInput = TestInput::from(test_file);
         let output_path: String = input.output_path.clone();
         let expected_file_path: String = PathBuf::new()
             .join("correct_output")
@@ -570,8 +608,10 @@ pub fn test_spammy() {
             continue;
         }
 
+        let extraction_input: ExtractionInput = ExtractionInput::from(&input);
+
         // Call the extraction method and handle errors
-        let extraction_result: Result<PathBuf, ExtractionError> = extract_method(input);
+        let extraction_result: Result<String, ExtractionError> = extract_method(extraction_input);
 
         // Measure time taken for extraction
         let test_elapsed_time: Duration = test_start_time.elapsed();
@@ -607,11 +647,16 @@ pub fn test_spammy() {
         let mut compilation_status: String = "N/A".magenta().to_string(); // Default to not applicable
 
         if extraction_result.is_ok() {
+            // Unwrap the result to get the output code (as we know that it is
+            // successful)
+            // Also write the output code to the output file for later viewing
+            let extraction_result: String = extraction_result.unwrap();
+            fs::write(&output_path, &extraction_result).unwrap();
             extraction_status = "PASSED".green().to_string();
             passed_stage_1 += 1;
 
             // Compare the output file with the expected file's AST
-            match parse_and_compare_ast(&output_path, &expected_file_path) {
+            match parse_and_compare_ast(&extraction_result, &expected_file_path) {
                 Ok(is_identical) => {
                     if is_identical {
                         comparison_status = "PASSED".green().to_string();
@@ -766,16 +811,16 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_identical() -> Result<(), ExtractionError> {
         // Create temporary files for expected and output content
-        let expected_file = NamedTempFile::new()?;
-        let output_file = NamedTempFile::new()?;
+        let expected_file: NamedTempFile = NamedTempFile::new()?;
 
         // Write identical content to both files
-        let content = "fn example() -> i32 { 42 }";
+        let content: &str = "fn example() -> i32 { 42 }";
         fs::write(expected_file.path(), content)?;
-        fs::write(output_file.path(), content)?;
 
         // Run the function
-        let result = parse_and_compare_ast(expected_file.path().to_str().unwrap(), output_file.path().to_str().unwrap())?;
+        let result: bool = parse_and_compare_ast(
+            &content.to_string(),
+            expected_file.path().to_str().unwrap())?;
 
         // Assert that the result is true
         assert!(result, "The ASTs should be identical");
@@ -786,17 +831,18 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_different() -> Result<(), ExtractionError> {
         // Create temporary files for expected and output content
-        let expected_file = NamedTempFile::new()?;
-        let output_file = NamedTempFile::new()?;
+        let expected_file: NamedTempFile = NamedTempFile::new()?;
 
         // Write different content to the files
-        let expected_content = "fn example() -> i32 { 42 }";
-        let output_content = "fn example() -> i32 { 43 }";
+        let output_content: &str = "fn example() -> i32 { 42 }";
+        let expected_content: &str = "fn example() -> i32 { 43 }";
         fs::write(expected_file.path(), expected_content)?;
-        fs::write(output_file.path(), output_content)?;
 
         // Run the function
-        let result = parse_and_compare_ast(expected_file.path().to_str().unwrap(), output_file.path().to_str().unwrap())?;
+        let result: bool = parse_and_compare_ast(
+            &output_content.to_string(),
+            expected_file.path().to_str().unwrap()
+        )?;
 
         // Assert that the result is false
         assert!(!result, "The ASTs should be different");
@@ -807,10 +853,13 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_file_not_found() -> Result<(), ExtractionError> {
         // Non-existent file paths
-        let non_existent_file = "non_existent_file.rs";
+        let non_existent_file: &str = "non_existent_file.rs";
 
         // Run the function
-        let result = parse_and_compare_ast(non_existent_file, non_existent_file);
+        let result: Result<bool, ExtractionError> = parse_and_compare_ast(
+            &"".to_string(),
+             non_existent_file
+        );
 
         // Assert that the result is an error
         assert!(result.is_err(), "The function should return an error for non-existent files");
@@ -821,15 +870,16 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_empty_files() -> Result<(), ExtractionError> {
         // Create temporary files for empty content
-        let expected_file = NamedTempFile::new()?;
-        let output_file = NamedTempFile::new()?;
+        let expected_file: NamedTempFile = NamedTempFile::new()?;
 
         // Write empty content to both files
         fs::write(expected_file.path(), "")?;
-        fs::write(output_file.path(), "")?;
 
         // Run the function
-        let result = parse_and_compare_ast(expected_file.path().to_str().unwrap(), output_file.path().to_str().unwrap())?;
+        let result: bool = parse_and_compare_ast(
+            &"".to_string(),
+            expected_file.path().to_str().unwrap(),
+        )?;
 
         // Assert that the result is true
         assert!(result, "The ASTs for empty files should be identical");
@@ -840,16 +890,17 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_invalid_content() -> Result<(), ExtractionError> {
         // Create temporary files with invalid content
-        let expected_file = NamedTempFile::new()?;
-        let output_file = NamedTempFile::new()?;
+        let expected_file: NamedTempFile = NamedTempFile::new()?;
 
         // Write invalid content to both files
-        let invalid_content = "fn example { 42 "; // Missing closing brace
+        let invalid_content: &str = "fn example { 42 "; // Missing closing brace
         fs::write(expected_file.path(), invalid_content)?;
-        fs::write(output_file.path(), invalid_content)?;
 
         // Run the function
-        let result = parse_and_compare_ast(expected_file.path().to_str().unwrap(), output_file.path().to_str().unwrap());
+        let result: Result<bool, ExtractionError> = parse_and_compare_ast(
+            &invalid_content.to_string(),
+            expected_file.path().to_str().unwrap()
+        );
 
         // Assert that the result is an error
         assert!(result.is_err(), "The function should return an error for invalid content");
@@ -860,17 +911,18 @@ mod tests {
     #[test]
     fn test_parse_and_compare_ast_different_formatting() -> Result<(), ExtractionError> {
         // Create temporary files with the same logical content but different formatting
-        let expected_file = NamedTempFile::new()?;
-        let output_file = NamedTempFile::new()?;
+        let expected_file: NamedTempFile = NamedTempFile::new()?;
 
         // Write different formatting to the files
-        let expected_content = "fn example() -> i32 {\n    42\n}";
-        let output_content = "fn example() -> i32 { 42 }";
+        let output_content: &str = "fn example() -> i32 { 42 }";
+        let expected_content: &str = "fn example() -> i32 {\n    42\n}";
         fs::write(expected_file.path(), expected_content)?;
-        fs::write(output_file.path(), output_content)?;
 
         // Run the function
-        let result = parse_and_compare_ast(expected_file.path().to_str().unwrap(), output_file.path().to_str().unwrap())?;
+        let result: bool = parse_and_compare_ast(
+            &output_content.to_string(),
+            expected_file.path().to_str().unwrap(),
+        )?;
 
         // Assert that the result is true (assuming the formatting does not affect the AST)
         assert!(result, "The ASTs should be identical despite different formatting");

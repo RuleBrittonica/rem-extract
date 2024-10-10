@@ -41,7 +41,6 @@ fn main() {
     match &args.command {
         EXTRACTCommands::Extract {
             file_path,
-            new_file_path,
             new_fn_name,
             start_index,
             end_index,
@@ -56,7 +55,6 @@ fn main() {
 
             let input = ExtractionInput::new(
                 file_path.to_str().unwrap(),
-                new_file_path.to_str().unwrap(),
                 new_fn_name,
                 *start_index as u32,
                 *end_index as u32,

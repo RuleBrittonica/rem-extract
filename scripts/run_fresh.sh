@@ -11,6 +11,12 @@ rm -f ./rem-extract/src/test_details.rs
 
 cargo clean
 
+# Clean the cache (will require re-downloading dependencies)
+cargo cache -a
+
+# Update the dependencies
+cargo update
+
 # Then make the starting dirs
 mkdir -p ./input
 mkdir -p ./output
@@ -24,7 +30,7 @@ python ./4_convert_to_project.py
 python ./5_fixup_semicolons.py
 
 # Now we need to build the project
-cargo build --release --bin rem-extract
+cargo lcheck && cargo build --release --bin rem-extract
 
 # Now we need to run the project
 cargo run --release --bin rem-extract test -v

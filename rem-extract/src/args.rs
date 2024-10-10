@@ -22,9 +22,6 @@ pub enum EXTRACTCommands {
         #[arg(help = "The path to the file to refactor")]
         file_path: PathBuf,
 
-        #[arg(help = "The output path for the refactored file")]
-        new_file_path: PathBuf,
-
         #[arg(help = "The name of the new function to create")]
         new_fn_name: String,
 

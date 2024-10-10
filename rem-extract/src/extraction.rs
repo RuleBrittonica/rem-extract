@@ -49,23 +49,19 @@ use crate::{
 #[derive(Debug, PartialEq, Clone)]
 pub struct ExtractionInput {
     pub file_path: String,
-    pub output_path: String,
     pub new_fn_name: String,
     pub start_idx: u32,
     pub end_idx: u32,
 }
 
-
 impl ExtractionInput {
     pub fn new(
         file_path: &str,
-        output_path: &str,
         new_fn_name: &str,
         start_idx: u32,
         end_idx: u32,
     ) -> Self { ExtractionInput {
             file_path: file_path.to_string(),
-            output_path: output_path.to_string(),
             new_fn_name: new_fn_name.to_string(),
             start_idx,
             end_idx,
@@ -75,13 +71,11 @@ impl ExtractionInput {
     #[allow(dead_code)]
     pub fn new_absolute(
         file_path: &str,
-        output_path: &str,
         new_fn_name: &str,
         start_idx: u32,
         end_idx: u32,
     ) -> Self { ExtractionInput {
             file_path: convert_to_abs_path_buf(file_path).unwrap().as_str().to_string(),
-            output_path: convert_to_abs_path_buf(output_path).unwrap().as_str().to_string(),
             new_fn_name: new_fn_name.to_string(),
             start_idx,
             end_idx,
@@ -99,17 +93,6 @@ fn check_file_exists(file_path: &str) -> Result<(), ExtractionError> {
         return Err(ExtractionError::Io(io::Error::new(
             ErrorKind::NotFound,
             format!("File not found: {}", file_path),
-        )));
-    }
-    Ok(())
-}
-
-// Ensure that the input and output files are not the same
-fn input_output_not_same(input: &ExtractionInput) -> Result<(), ExtractionError> {
-    if input.file_path == input.output_path {
-        return Err(ExtractionError::Io(io::Error::new(
-            ErrorKind::InvalidInput,
-            "Input and output files cannot be the same",
         )));
     }
     Ok(())
@@ -134,7 +117,6 @@ fn check_idx(input: &ExtractionInput) -> Result<(), ExtractionError> {
 fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
     // Execute each input validation step one by one
     check_file_exists(&input.file_path)?;
-    input_output_not_same(&input)?;
     check_idx(input)?;
 
     Ok(())
@@ -145,20 +127,17 @@ fn verify_input(input: &ExtractionInput) -> Result<(), ExtractionError> {
 // ========================================
 
 /// Function to extract the code segment based on cursor positions
-/// If successful, returns the `PathBuf` to the output file
-pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError> {
+/// If successful, returns the `String` of the output code
+pub fn extract_method(input: ExtractionInput) -> Result<String, ExtractionError> {
 
     // Extract the struct information
     let input_path: &str = &input.file_path;
-    let output_path: &str = &input.output_path;
     let callee_name: &str = &input.new_fn_name;
     let start_idx: u32 = input.start_idx;
     let end_idx: u32 = input.end_idx;
 
     // Convert the input and output path to an `AbsPathBuf`
     let input_abs_path: AbsPathBuf = convert_to_abs_path_buf(input_path).unwrap();
-    let output_abs_path: AbsPathBuf = convert_to_abs_path_buf(output_path).unwrap();
-    // print!("Output Path: {:?}", output_abs_path);
 
     // Verify the input data
     verify_input(&input)?;
@@ -191,30 +170,26 @@ pub fn extract_method(input: ExtractionInput) -> Result<PathBuf, ExtractionError
     // 1. Check if the function to extract is not just a comment
     // 2. Check if the function to extract has matching braces
     // 3. Convert the range to a trimmed range.
-    // TODO
     let sema: Semantics<'_, ra_ap_ide::RootDatabase> = Semantics::new( &db );
-    let frange_ = generate_frange( &input_abs_path, &vfs, range_.clone() );
-    let edition = EditionedFileId::current_edition( frange_.file_id );
-    let source_file = sema.parse( edition );
+    let frange_: ra_ap_hir::FileRangeWrapper<ra_ap_vfs::FileId> = generate_frange( &input_abs_path, &vfs, range_.clone() );
+    let edition: EditionedFileId = EditionedFileId::current_edition( frange_.file_id );
+    let source_file: ra_ap_syntax::SourceFile = sema.parse( edition );
     let range: (u32, u32) = trim_range( &source_file, &range_ );
     check_comment( &source_file, &range )?;
     check_braces( &source_file, &range )?;
 
     let analysis_host: AnalysisHost = AnalysisHost::with_database( db );
     let analysis: Analysis = run_analysis( analysis_host );
-    // println!("Analysis {:?}", analysis);
 
     let assists: Vec<Assist> = get_assists(&analysis, &vfs, &input_abs_path, range);
     let assist: Assist = filter_extract_function_assist(assists)?;
 
-    apply_extract_function(
+    let modified_code: String = apply_extract_function(
         &assist,
         &input_abs_path,
-        &output_abs_path,
         &vfs,
         &callee_name,
-    );
+    )?;
 
-    Ok( PathBuf::from(output_abs_path.as_str()) )
+    Ok( modified_code )
 }
-

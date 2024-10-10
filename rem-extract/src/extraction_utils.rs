@@ -370,17 +370,16 @@ pub fn filter_extract_function_assist( assists: Vec<Assist> ) -> Result<Assist, 
         }
 }
 
-/// Copies the source file to the output file path.
-/// Applies the extract_function source change to the output file.
+/// Applies the extract_function source change to the given code
+/// Returns the String of the output code
 /// Renames the function from `fun_name` to `callee_name`.
 /// Requires the output path to be an `AbsPathBuf`.
 pub fn apply_extract_function(
     assist: &Assist,
     input_path: &AbsPathBuf,
-    output_path: &AbsPathBuf,
     vfs: &Vfs,
     callee_name: &str,
-) -> PathBuf {
+) -> Result<String, ExtractionError> {
 
     let vfs_in_path: VfsPath = VfsPath::new_real_path(
         input_path
@@ -388,57 +387,47 @@ pub fn apply_extract_function(
             .to_string(),
     );
 
-    let vfs_out_path: VfsPath = VfsPath::new_real_path(
-        output_path
-            .as_str()
-            .to_string(),
-    );
-
-    copy_file_vfs( &vfs_in_path, &vfs_out_path );
-
     // From here, extract the source change, but apply it to the copied file
     let src_change: SourceChange = assist.source_change
         .as_ref()
         .unwrap()
         .clone();
 
-    // println!("{:?}", src_change);
-
     let in_file_id: FileId = vfs.file_id( &vfs_in_path ).unwrap();
     let (text_edit, maybe_snippet_edit) = src_change.get_source_and_snippet_edit(
         in_file_id
     ).unwrap();
 
-    apply_edits(
-        &vfs_out_path,
+    // Get the source from the input file
+    let src_path: PathBuf = vfs_to_pathbuf( &vfs_in_path );
+    let text: String = fs::read_to_string( &src_path ).unwrap();
+    let edited_text: String = apply_edits(
+        text,
         text_edit.clone(),
         maybe_snippet_edit.clone(),
     );
 
     // Rename the function from fun_name to NEW_FUNCTION_NAME using a search and
     // replace on the output file
-    rename_function(
-        &vfs_out_path,
+    let renamed_text: String = rename_function(
+        edited_text,
         "fun_name",
         callee_name,
     );
 
     // Ensure that the output file imports std::ops::ControlFlow if it uses it
-    let _ = fixup_controlflow( &vfs_out_path ).unwrap();
+    let fixed_cf_text: String = fixup_controlflow( renamed_text );
 
-    // Return the output file path
-    PathBuf::from( vfs_out_path.to_string() )
+    Ok( fixed_cf_text)
 }
 
-// Apply a text edit.
-// Then apply the snippet edit if it is present
+/// Applies the edits to a given set of source code (as a String)
 fn apply_edits(
-    vfs_path: &VfsPath,
+    text: String,
     text_edit: TextEdit,
     maybe_snippet_edit: Option<SnippetEdit>,
-) -> () {
-    let path: PathBuf = vfs_to_pathbuf( vfs_path );
-    let mut text: String = std::fs::read_to_string( &path ).unwrap();
+) -> String {
+    let mut text: String = text; // Make the text mutable
     text_edit.apply( &mut text );
     match maybe_snippet_edit {
         Some( snippet_edit ) => {
@@ -446,21 +435,20 @@ fn apply_edits(
         },
         None => (),
     }
-    std::fs::write( &path, text ).unwrap();
+    text
 }
 
 // Rename a function in a file using a search and replace
 fn rename_function(
-    vfs_path: &VfsPath,
+    text: String,
     old_name: &str,
     new_name: &str,
-) -> () {
-    let path: PathBuf = vfs_to_pathbuf( vfs_path );
-    let mut text: String = std::fs::read_to_string( &path ).unwrap();
+) -> String {
+    let mut text = text; // Make the text mutable
     let old_name: String = old_name.to_string();
     let new_name: String = new_name.to_string();
     text = text.replace( &old_name, &new_name );
-    std::fs::write( &path, text ).unwrap();
+    text
 }
 
 /// Converts a `VfsPath` to a `PathBuf`
@@ -468,17 +456,6 @@ fn vfs_to_pathbuf( vfs_path: &VfsPath ) -> PathBuf {
     let path_str = vfs_path.to_string();
     // println!("{}", path_str);
     PathBuf::from( path_str )
-}
-
-/// Copies a file from one `VfsPath` to another `VfsPath`
-fn copy_file_vfs(
-    source: &VfsPath,
-    destination: &VfsPath,
-) -> () {
-    // Copy the file
-    let from: PathBuf = vfs_to_pathbuf( source );
-    let to: PathBuf = vfs_to_pathbuf( destination );
-    let _ = std::fs::copy( from, to ).unwrap();
 }
 
 /// Checks that there is some input to the function that isn't a comment
@@ -563,26 +540,15 @@ pub fn trim_range(
 }
 
 /// Checks if a file contains a reference to ControlFlow::, and if so, adds  use
-/// core::ops::ControlFlow;\n to the start of the file, saving it back to the input path
-/// Returns the path if successful, or ExtractionError::ControlFlowFixupFailed
-/// if it failed
-/// If no references to ControlFlow:: are found, the file is left unchanged
-fn fixup_controlflow(
-    output_path: &VfsPath,
-) -> Result<&VfsPath, ExtractionError> {
-    let path: PathBuf = PathBuf::from( output_path.to_string() );
-    let mut text: String = fs::read_to_string( &path ).unwrap();
+/// std::ops::ControlFlow;\n\n to the start of the file, saving it back to the input path
+/// Returns the new text with the ControlFlow:: reference fixed up
+fn fixup_controlflow( text: String, ) -> String {
+    let mut text: String = text; // Make the text mutable
     let controlflow_ref: &str = "ControlFlow::";
     if text.contains( controlflow_ref ) {
         text = format!("use std::ops::ControlFlow;\n\n{}", text);
-        let write_result = fs::write( &path, text );
-        match write_result {
-            Ok(_) => Ok( output_path ),
-            Err(_) => Err(ExtractionError::ControlFlowFixupFailed( output_path.clone() )),
-        }
-    } else {
-        Ok( output_path )
     }
+    text
 }
 
 #[cfg(test)]
