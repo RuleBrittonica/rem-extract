@@ -25,10 +25,10 @@ pub enum EXTRACTCommands {
         #[arg(help = "The name of the new function to create")]
         new_fn_name: String,
 
-        #[arg(short, long, help = "Index to the start of the function to extract")]
+        #[arg(help = "Index to the start of the function to extract")]
         start_index: usize,
 
-        #[arg(short, long, help = "Index to the end of the function to extract")]
+        #[arg(help = "Index to the end of the function to extract")]
         end_index: usize,
 
         #[arg(short, long, help = "Enable verbose output", action = ArgAction::SetTrue)]

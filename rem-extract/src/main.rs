@@ -60,7 +60,21 @@ fn main() {
                 *end_index as u32,
             );
 
-            let _modified_code = extract_method(input);
+            let extraction_output: Result<(String, String), error::ExtractionError> = extract_method(input);
+            let (output_code, _caller_method) = match extraction_output {
+                Ok((output_code, caller_method)) => {
+                    info!("Output Code: {}", output_code);
+                    info!("Caller Method: {}", caller_method);
+                    (output_code, caller_method)
+                },
+                Err(e) => {
+                    info!("Error: {}", e);
+                    return;
+                }
+            };
+
+            println!("{}", output_code);
+            println!("Extraction Successful");
         }
 
         EXTRACTCommands::Test {

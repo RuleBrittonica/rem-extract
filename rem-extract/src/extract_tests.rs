@@ -85,13 +85,18 @@ impl From<&TestInput> for ExtractionInput {
         }
     }
 }
-// Helper function to strip ANSI escape codes
+
+/// Strips ANSI color codes from a string using a regex
+/// This is useful for comparing strings with ANSI color codes to strings without
 #[allow(dead_code)]
 fn strip_ansi_codes(s: &str) -> String {
     let ansi_regex = Regex::new(r"\x1b\[([0-9]{1,2}(;[0-9]{0,2})*)m").unwrap();
     ansi_regex.replace_all(s, "").to_string()
 }
 
+/// Parse and subsequently compare the ASTs of two files. One file is provided
+/// as a String, with the other being a reference to a file path (of the
+/// expected file)
 #[allow(dead_code)]
 fn parse_and_compare_ast(output_content: &String, expected_file_path: &str) -> Result<bool, ExtractionError> {
     let expected_content: String = fs::read_to_string(expected_file_path)?;
@@ -338,7 +343,6 @@ pub fn test_verbose() {
     let allowed_tests: Vec<&'static str> = vec![
         // "break_loop_nested",
         // "comments_in_block_expr",
-
     ];
 
     for (index, test_file) in TEST_FILES.iter().enumerate() {
