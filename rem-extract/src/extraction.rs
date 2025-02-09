@@ -202,7 +202,7 @@ pub fn extract_method(input: ExtractionInput) -> Result<(String, String), Extrac
         &source_file,
         range,
     )?;
-    
+
     Ok( (modified_code, parent_method) )
 }
 

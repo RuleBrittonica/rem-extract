@@ -418,7 +418,7 @@ pub fn apply_extract_function(
     // Ensure that the output file imports std::ops::ControlFlow if it uses it
     let fixed_cf_text: String = fixup_controlflow( renamed_text );
 
-    Ok( fixed_cf_text)
+    Ok( fixed_cf_text )
 }
 
 /// Applies the edits to a given set of source code (as a String)
@@ -721,7 +721,7 @@ mod tests {
         // Compare the canonicalized paths
         let left_path = <AbsPathBuf as AsRef<Utf8Path>>::as_ref(&abs_path_buf).to_string().replace(r"\\?\", "");
         let right_path = expected_abs_path.as_path().to_string().replace(r"\\?\", "");
-        assert_eq!(left_path, right_path);
+        assert_eq!( left_path, right_path );
 
     }
 }
